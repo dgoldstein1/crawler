@@ -2,10 +2,6 @@ package crawler
 
 import (
 	"testing"
-	"reflect"
-	"os"
-	"github.com/jarcoal/httpmock"
-	"errors"
 )
 
 
@@ -16,41 +12,6 @@ import (
 // 	Crawl("https://en.wikipedia.org/wiki/String_cheese", r, 2)
 // }
 
-func TestAddToDb(t *testing.T) {}
+func TestAddToDb(t *testing.T) {
 
-func TestConnectToDB(t *testing.T) {
-	dbEndpoint := "http://localhost:17474"
-	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
-	// first test bad response
-	err := connectToDB()
-	AssertErrorEqual(t, err, errors.New(`Get http://localhost:17474/metrics: dial tcp 127.0.0.1:17474: connect: connection refused`))
-	// mock out http endpoint
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-		// Exact URL match
-	httpmock.RegisterResponder("GET", dbEndpoint + "/metrics",
-		httpmock.NewStringResponder(200, `[{"id": 1, "name": "My Great Article"}]`))
-	// Use Client & URL from our local test server
-	err = connectToDB()
-	AssertErrorEqual(t, err, nil)
-}
-
-// adopted taken from https://gist.github.com/samalba/6059502
-func AssertEqual(t *testing.T, a interface{}, b interface{}) {
-	if a == b {
-		return
-	}
-	// debug.PrintStack()
-	t.Errorf("Received '%v' (type %v), expected '%v' (type %v)", a, reflect.TypeOf(a), b, reflect.TypeOf(b))
-}
-
-func AssertErrorEqual(t *testing.T, a error, b error) {
-	if (a == nil || b == nil) {
-		AssertEqual(t, a, b)
-		return
-	}
-	if (a.Error() == b.Error()) {
-		return
-	}
-	t.Errorf("Received '%v' (type %v), expected '%v' (type %v)", a.Error(), reflect.TypeOf(a), b.Error(), reflect.TypeOf(b))
 }
