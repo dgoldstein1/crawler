@@ -12,8 +12,6 @@ func addToDB(currentNode string, neighborNode string) (bool, error) {
 
 	// POST node to DB
 
-
-	// os.Getenv("GRAPH_DB_ENDPOINT")
 	return true, nil
 }
 
