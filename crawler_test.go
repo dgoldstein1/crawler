@@ -2,22 +2,34 @@ package crawler
 
 import (
 	"testing"
-	"regexp"
+	// "regexp"
 	"reflect"
 	"os"
+	"github.com/jarcoal/httpmock"
 )
 
-func TestCrawl(t *testing.T) {
-	os.Setenv("GRAPH_DB_ENDPOINT", "http://localhost:17474")
-	r, _ := regexp.Compile("\\A/wiki/")
 
-	Crawl("https://en.wikipedia.org/wiki/String_cheese", r, 2)
-}
+// TODO: implement after connectToDB to addToDB
+// func TestCrawl(t *testing.T) {
+// 	r, _ := regexp.Compile("\\A/wiki/")
+//
+// 	Crawl("https://en.wikipedia.org/wiki/String_cheese", r, 2)
+// }
 
 func TestAddToDb(t *testing.T) {}
 
-func TestConnectToDB(t *testing.T) {
-	
+func TestDoStuffWithTestServer(t *testing.T) {
+	dbEndpoint := "http://localhost:17474"
+	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
+	// mock out http endpoint
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+		// Exact URL match
+	httpmock.RegisterResponder("GET", dbEndpoint + "/metrics",
+		httpmock.NewStringResponder(200, `[{"id": 1, "name": "My Great Article"}]`))
+	// Use Client & URL from our local test server
+	err := connectToDB()
+	AssertErrorEqual(t, err, nil)
 }
 
 // adopted taken from https://gist.github.com/samalba/6059502

@@ -4,11 +4,14 @@ import (
 	"github.com/gocolly/colly"
 	"regexp"
 	"log"
+	"os"
+	"net/http"
+	"io/ioutil"
 )
 
 // crawls a domain and saves relatives links to a db
 func Crawl(endpoint string, urlRegex *regexp.Regexp, maxDepth int) {
-	_, err := connectToDB()
+	err := connectToDB()
 	if err != nil {
 		log.Fatal("Could not connect to DB")
 		panic(err)
@@ -45,7 +48,13 @@ func addToDB(currentNode string, neighborNode string) (bool, error) {
 }
 
 // connects to given databse
-func connectToDB() (bool, error) {
-	// os.Getenv("GRAPH_DB_ENDPOINT")
-	return true, nil
+func connectToDB() error {
+	resp, err := http.Get(os.Getenv("GRAPH_DB_ENDPOINT") + "/metrics")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	_, err = ioutil.ReadAll(resp.Body)
+	// handling error and doing stuff with body that needs to be unit tested
+	return err
 }
