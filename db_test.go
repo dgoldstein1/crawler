@@ -5,6 +5,7 @@ import (
 	"os"
 	"github.com/jarcoal/httpmock"
 	"errors"
+	"net/http"
 )
 
 var dbEndpoint = "http://localhost:17474"
@@ -19,14 +20,22 @@ func TestAddToDb(t *testing.T) {
 		AssertEqual(t, hasNeighbors, false)
 		AssertErrorEqual(t, err, errors.New(`Get http://localhost:17474/metrics: dial tcp 127.0.0.1:17474: connect: connection refused`))
 	})
-	// mock out http endpoint
-	// httpmock.Activate()
-	// defer httpmock.DeactivateAndReset()
-	// httpmock.RegisterResponder("GET", dbEndpoint + "/neighbors?node=2",
-	// 	httpmock.NewStringResponder(200, `[17,33,89,95]`))
-	// // Use Client & URL from our local test server
-	// err = connectToDB("2", []string{})
-	// AssertErrorEqual(t, err, nil)
+	t.Run("node already exists", func(t *testing.T){
+		// mock out http endpoint
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+		// Exact URL match
+		httpmock.RegisterResponder("GET", dbEndpoint + "/neigihbors?node=2",
+			func(req *http.Request) (*http.Response, error) {
+				response := []string{"15", "36"}
+				return httpmock.NewJsonResponse(200, response)
+			},
+		)
+		// Use Client & URL from our local test server
+		hasNeighbor, err := addToDB("2", []string{})
+		AssertErrorEqual(t, err, nil)
+		AssertEqual(t, hasNeighbor, true)
+	})
 }
 
 func TestConnectToDB(t *testing.T) {
@@ -42,7 +51,7 @@ func TestConnectToDB(t *testing.T) {
 		defer httpmock.DeactivateAndReset()
 		// Exact URL match
 		httpmock.RegisterResponder("GET", dbEndpoint + "/metrics",
-			httpmock.NewStringResponder(200, `[{"id": 1, "name": "My Great Article"}]`))
+			httpmock.NewStringResponder(200, `TEST`))
 		// Use Client & URL from our local test server
 		err := connectToDB()
 		AssertErrorEqual(t, err, nil)

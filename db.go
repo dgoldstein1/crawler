@@ -6,6 +6,10 @@ import (
 	"io/ioutil"
 )
 
+type node struct {
+    Neighbors   []string
+}
+
 // adds edge to DB, returns (true) if neighbor node exists
 func addToDB(currentNode string, neighborNode []string) (bool, error) {
 	// check to see if node already exists
