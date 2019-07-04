@@ -25,9 +25,9 @@ docker build . -t dgoldstein1/wikipedia-path
 
 #### Local Development
 
-- Install [fresh](https://github.com/gravityblast/fresh)
+- Install [inotifywait](https://linux.die.net/man/1/inotifywait)
 ```sh
-fresh
+./watch_dev_changes.sh
 ```
 
 #### Testing
