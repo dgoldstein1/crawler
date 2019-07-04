@@ -7,7 +7,7 @@ import (
 )
 
 // adds edge to DB, returns (true) if neighbor node exists
-func addToDB(currentNode string, neighborNode string) (bool, error) {
+func addToDB(currentNode string, neighborNode []string) (bool, error) {
 	// check to see if node already exists
 
 	// POST node to DB
