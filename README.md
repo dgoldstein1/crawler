@@ -1,74 +1,44 @@
 # wikipedia-path
 
-Finds path between two wikipedia articles.
-
-## Required environment variables
-
-```
-- "NEO4J_ENDPOINT"
-- "NEO4J_USERNAME"
-- "NEO4J_PASS"
-```
+Script to crawl wikipedia articles and add them to them to a [big-data graph DB](https://github.com/dgoldstein1/graphApi)
 
 ## Run it
 
 ```sh
-dep ensure -v
+./crawler --endpoint "http://localhost:6080"
+```
+
+## Build it
+
+#### Binary
+
+```sh
+go build
+```
+
+#### Docker
+```sh
+docker build . -t dgoldstein1/wikipedia-path
+```
+
+## Development
+
+#### Local Development
+
+- Install [fresh](https://github.com/gravityblast/fresh)
+```sh
 fresh
 ```
 
-or
-```sh
-docker build . -t dgoldstein1/wikipedia-path
-docker run -p 8080:8080 dgoldstein1/wikipedia-path
-```
-
-## Test
+#### Testing
 
 ```sh
 go test $(go list ./... | grep -v /vendor/)
 ```
 
-or
-
-```sh
-run_tests.sh
-```
-
-## API
-
-`/metrics` -- shows prometheus metrics for the service
-
-`/path?aricle1=Test_(wrestler)&article2=The_Un-Americans` -- generates a random number with a max
-
-```json
-{
-	"edgeNodes" : {
-		"article1" : {
-			"valid" : true,
-			"description" : "...",
-		},
-		"article2" : {
-			"valid" : true,
-			"description" : "..."
-		}
-	},
-	"path" : {
-		"exists" : true,
-		"nodes" : [
-			"Test_(wrestler)",
-			"World_Tag_Team_Championship_(WWE)",
-			"The_Un-Americans",
-		],
-	}
-
-}
-```
-
-
 ## Authors
 
-* **David Goldstein** - [DavidCharlesGoldstein.com](http://www.davidcharlesgoldstein.com/?github-password-service) - [Decipher Technology Studios](http://deciphernow.com/)
+* **David Goldstein** - [DavidCharlesGoldstein.com](http://www.davidcharlesgoldstein.com/?github-wikipeida-path) - [Decipher Technology Studios](http://deciphernow.com/)
 
 ## License
 
