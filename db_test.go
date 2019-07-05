@@ -9,16 +9,15 @@ import (
 )
 
 var dbEndpoint = "http://localhost:17474"
-var notFoundError = errors.New(`Get http://localhost:17474/metrics: dial tcp 127.0.0.1:17474: connect: connection refused`)
+var notFoundError = `dial tcp 127.0.0.1:17474: connect: connection refused`
 
 func TestAddToDb(t *testing.T) {
 	t.Run("fails when no server found", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 		// first test bad response
 		hasNeighbors, err := addToDB("testNode", []string{})
-		AssertErrorEqual(t, err, notFoundError)
+		AssertErrorEqual(t, err, errors.New("Get http://localhost:17474/neighbors?neighbors=testNode: " + notFoundError))
 		AssertEqual(t, hasNeighbors, false)
-		AssertErrorEqual(t, err, errors.New(`Get http://localhost:17474/metrics: dial tcp 127.0.0.1:17474: connect: connection refused`))
 	})
 	t.Run("node already exists", func(t *testing.T){
 		// mock out http endpoint
@@ -43,7 +42,7 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	t.Run("fails when db not found", func(t *testing.T) {
 		err := connectToDB()
-		AssertErrorEqual(t, err, notFoundError)
+		AssertErrorEqual(t, err, errors.New("Get http://localhost:17474/metrics: " + notFoundError))
 	})
 	t.Run("succeed when server exists", func(t *testing.T){
 		// mock out http endpoint
