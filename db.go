@@ -9,8 +9,8 @@ import (
 	"bytes"
 )
 
-// adds edge to DB, returns (true) if already in DB
-func addToDB(currentNode string, neighborNodes []string) (bool, error) {
+// adds edge to DB, returns (true) if neighbor already in DB
+func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
 	// check to see if node already exists
 	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/neighbors"
 	req, _ := http.NewRequest("GET", url, nil)
@@ -24,13 +24,25 @@ func addToDB(currentNode string, neighborNodes []string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	// assert that node does not exist
+	// 404 is current node does not exist
 	if (resp.StatusCode != 404) {
-		return true, nil
+		// check that neighbor node is not in response
+		defer resp.Body.Close()
+		var neighbors []string
+		err = json.NewDecoder(resp.Body).Decode(&neighbors)
+		if err != nil {
+			return false, err
+		}
+		for _, v := range neighbors {
+			// neighbor node found for this node
+			if v == neighborNode {
+				return true, nil
+			}
+		}
 	}
-	// POST node to DB
+	// no neighbor node, POST node to DB
 	jsonValue, _ := json.Marshal( map[string][]string {
-		"neighbors" : neighborNodes,
+		"neighbors" : []string{neighborNode},
 	})
   req, _ = http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
   req.Header.Set("Content-Type", "application/json")
@@ -39,6 +51,7 @@ func addToDB(currentNode string, neighborNodes []string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 
 	return false, nil
 }

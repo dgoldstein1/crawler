@@ -25,7 +25,8 @@ func Crawl(endpoint string, urlRegex *regexp.Regexp, maxDepth int) {
 		link := e.Attr("href")
 		// Print link
 		if urlRegex.MatchString(link) {
-			// neighborExists, _ := addToDB(e.Request.URL.String(), link)
+			// link found
+			// neighborExists, _ := addEdgeIfDoesNotExist(e.Request.URL.String(), link)
 			// if !neighborExists {
 			// 	e.Request.Visit(link)
 			// }
