@@ -10,8 +10,7 @@ import (
 func Crawl(endpoint string, urlRegex *regexp.Regexp, maxDepth int) {
 	err := connectToDB()
 	if err != nil {
-		log.Fatal("Could not connect to DB")
-		panic(err)
+		log.Fatal(err)
 	}
 	// Instantiate default collector
 	c := colly.NewCollector(
