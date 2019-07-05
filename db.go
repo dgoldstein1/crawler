@@ -4,16 +4,16 @@ import (
 	"os"
 	"net/http"
 	"io/ioutil"
-	"encoding/json"
+	// "encoding/json"
 	"time"
 )
 
-// adds edge to DB, returns (true) if neighbor node exists
+// adds edge to DB, returns (true) if already in DB
 func addToDB(currentNode string, neighborNode []string) (bool, error) {
 	// check to see if node already exists
 	req, _ := http.NewRequest("GET", os.Getenv("GRAPH_DB_ENDPOINT") + "/neighbors", nil)
 	q := req.URL.Query()
-	q.Add("neighbors", currentNode)
+	q.Add("node", currentNode)
 	req.URL.RawQuery = q.Encode()
 	client := http.Client{
 		Timeout : time.Duration(5 * time.Second),
@@ -22,17 +22,14 @@ func addToDB(currentNode string, neighborNode []string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return false, err
+	// assert that node does not exist
+	if (resp.StatusCode != 404) {
+		return true, nil
 	}
-	neighbors := []string{}
-	err = json.Unmarshal(body, &neighbors)
 
 	// POST node to DB
 
-	return true, nil
+	return false, nil
 }
 
 // connects to given databse
