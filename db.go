@@ -47,13 +47,9 @@ func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
   req, _ = http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
   req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = q.Encode()
-	resp, err = client.Do(req)
-	if err != nil {
-		return false, err
-	}
-
-
-	return false, nil
+	// return the result of the POST request
+	_, err = client.Do(req)
+	return false, err
 }
 
 // connects to given databse

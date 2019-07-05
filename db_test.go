@@ -20,7 +20,7 @@ func TestAddToDb(t *testing.T) {
 		AssertErrorEqual(t, err, errors.New("Get http://localhost:17474/neighbors?node=testNode: " + notFoundError))
 		AssertEqual(t, alreadyInDB, false)
 	})
-	t.Run("node already exists", func(t *testing.T){
+	t.Run("neighbor node already exists", func(t *testing.T){
 		// mock out http endpoint
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
@@ -34,7 +34,7 @@ func TestAddToDb(t *testing.T) {
 		AssertErrorEqual(t, err, nil)
 		AssertEqual(t, alreadyInDB, true)
 	})
-	t.Run("adds node succesfully", func(t *testing.T){
+	t.Run("adds node when current node doesnt exist (404)", func(t *testing.T){
 		// mock out http endpoint
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
@@ -45,6 +45,30 @@ func TestAddToDb(t *testing.T) {
 					"code" : 404,
 					"error" : "Node was not found",
 				})
+			},
+		)
+		httpmock.RegisterResponder("POST", dbEndpoint + "/neighbors?node=2",
+			func(req *http.Request) (*http.Response, error) {
+				body := make(map[string][]string)
+				err := json.NewDecoder(req.Body).Decode(&body);
+				if err != nil {
+					t.Error(err)
+				}
+				return httpmock.NewJsonResponse(200, body)
+			},
+		)
+		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
+		AssertErrorEqual(t, err, nil)
+		AssertEqual(t, alreadyInDB, false)
+	})
+	t.Run("adds node when current exists", func(t *testing.T){
+		// mock out http endpoint
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+		// Exact URL match
+		httpmock.RegisterResponder("GET", dbEndpoint + "/neighbors?node=2",
+			func(req *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(200, []string{"5","3","7"})
 			},
 		)
 		httpmock.RegisterResponder("POST", dbEndpoint + "/neighbors?node=2",
