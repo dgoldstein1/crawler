@@ -6,6 +6,7 @@ import (
 	"github.com/jarcoal/httpmock"
 	"errors"
 	"net/http"
+	"encoding/json"
 )
 
 var dbEndpoint = "http://localhost:17474"
@@ -28,10 +29,38 @@ func TestAddToDb(t *testing.T) {
 			func(req *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, []string{"5","3","6"})
 			},
-		)		// Use Client & URL from our local test server
+		)
 		alreadyInDB, err := addToDB("2", []string{})
 		AssertErrorEqual(t, err, nil)
 		AssertEqual(t, alreadyInDB, true)
+	})
+	t.Run("adds node succesfully", func(t *testing.T){
+		// mock out http endpoint
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+		// Exact URL match
+		httpmock.RegisterResponder("GET", dbEndpoint + "/neighbors?node=2",
+			func(req *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(404, map[string]interface{}{
+					"code" : 404,
+					"error" : "Node was not found",
+				})
+			},
+		)
+		httpmock.RegisterResponder("POST", dbEndpoint + "/neighbors?node=2",
+			func(req *http.Request) (*http.Response, error) {
+				body := make(map[string][]string)
+				err := json.NewDecoder(req.Body).Decode(&body);
+				if err != nil {
+					t.Error(err)
+				}
+				return httpmock.NewJsonResponse(200, body)
+			},
+		)
+		nodesToAdd := []string{"3","4","5"}
+		alreadyInDB, err := addToDB("2", nodesToAdd)
+		AssertErrorEqual(t, err, nil)
+		AssertEqual(t, alreadyInDB, false)
 	})
 }
 
@@ -49,7 +78,7 @@ func TestConnectToDB(t *testing.T) {
 		// Exact URL match
 		httpmock.RegisterResponder("GET", dbEndpoint + "/metrics",
 			httpmock.NewStringResponder(200, `TEST`))
-		// Use Client & URL from our local test server
+
 		err := connectToDB()
 		AssertErrorEqual(t, err, nil)
 	})
