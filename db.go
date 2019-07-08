@@ -9,7 +9,6 @@ import (
 	"bytes"
 )
 
-type addEdgeFunction func(string, string)(bool, error)
 // adds edge to DB, returns (true) if neighbor already in DB
 func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
 	// check to see if node already exists
@@ -53,7 +52,6 @@ func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 	return false, err
 }
 
-type connectToDBFunction func() error
 // connects to given databse
 func connectToDB() error {
 	resp, err := http.Get(os.Getenv("GRAPH_DB_ENDPOINT") + "/metrics")
