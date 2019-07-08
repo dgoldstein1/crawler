@@ -4,7 +4,6 @@ import (
 	"github.com/gocolly/colly"
 	"regexp"
 	"log"
-	"fmt"
 )
 
 // crawls a domain and saves relatives links to a db
@@ -25,7 +24,7 @@ func Crawl(endpoint string, urlRegex *regexp.Regexp, maxDepth int, connectToDB c
 		link := e.Attr("href")
 		e.Request.Visit(link)
 		if urlRegex.MatchString(link) {
-			fmt.Println(link)
+			addEdgeIfDoesNotExist("t", link)
 		}
 	})
 
