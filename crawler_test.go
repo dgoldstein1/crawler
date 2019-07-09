@@ -2,21 +2,33 @@ package crawler
 
 import (
 	"testing"
-	"regexp"
-	"fmt"
+	"strings"
 )
 
 func TestCrawl(t *testing.T) {
 	// function doing setup of tests
+	isValidCrawlLink := func(url string) bool {
+		return strings.HasPrefix(url, "/wiki/") && !strings.Contains(url, ":")
+	}
+
+	nodesAdded := []string{}
+	addEdge := func(currNode string, neighborNode string) (bool, error) {
+		nodesAdded = append(nodesAdded, neighborNode)
+		return false, nil
+	}
+	connectToDB := func() error {return nil}
+	Crawl("https://en.wikipedia.org/wiki/String_cheese", isValidCrawlLink, 2, connectToDB, addEdge)
+
 	t.Run("only filters on links starting with regex", func (t *testing.T)  {
-		r, _ := regexp.Compile("\\A/wiki/")
-		nodesAdded := []string{}
-		addEdge := func(currNode string, neighborNode string) (bool, error) {
-			nodesAdded = append(nodesAdded, neighborNode)
-			return false, nil
+		for _, url := range nodesAdded {
+			AssertEqual(t, strings.HasPrefix(url, "/wiki/"), true)
 		}
-		connectToDB := func() error {return nil}
-		Crawl("https://en.wikipedia.org/wiki/String_cheese", r, 2, connectToDB, addEdge)
-		fmt.Println(nodesAdded)
+	})
+	t.Run("only filters on links starting with regex", func (t *testing.T)  {
+		for _, url := range nodesAdded {
+			if strings.Contains(url, ":") {
+					t.Errorf("Did not expect '%s' to contain ':'", url)
+			}
+		}
 	})
 }

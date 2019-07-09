@@ -2,12 +2,11 @@ package crawler
 
 import (
 	"github.com/gocolly/colly"
-	"regexp"
 	"log"
 )
 
 // crawls a domain and saves relatives links to a db
-func Crawl(endpoint string, urlRegex *regexp.Regexp, maxDepth int, connectToDB connectToDBFunction, addEdgeIfDoesNotExist addEdgeFunction) {
+func Crawl(endpoint string, isValidCrawlLink isValidCrawlLinkFunction, maxDepth int, connectToDB connectToDBFunction, addEdgeIfDoesNotExist addEdgeFunction) {
 	err := connectToDB()
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +22,7 @@ func Crawl(endpoint string, urlRegex *regexp.Regexp, maxDepth int, connectToDB c
 	c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 		e.Request.Visit(link)
-		if urlRegex.MatchString(link) {
+		if isValidCrawlLink(link) {
 			addEdgeIfDoesNotExist("t", link)
 		}
 	})
