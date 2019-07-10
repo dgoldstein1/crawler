@@ -5,7 +5,11 @@ Script to crawl wikipedia articles and add them to them to a [big-data graph DB]
 ## Run it
 
 ```sh
-./crawler --endpoint "http://localhost:6080"
+# run crawl on wikipedia
+GRAPH_DB_ENDPOINT="http://localhost:5000"
+STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese"
+MAX_CRAWL_DEPTH=15
+./crawler
 ```
 
 ## Build it
