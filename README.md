@@ -1,6 +1,6 @@
-# wikipedia-path
+# crawler
 
-Script to crawl wikipedia articles and add them to them to a [big-data graph DB](https://github.com/dgoldstein1/graphApi)
+Script to crawl html and add href links to a [big-data graph DB](https://github.com/dgoldstein1/graphApi)
 
 ## Run it
 
