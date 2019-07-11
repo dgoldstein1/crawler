@@ -10,13 +10,13 @@ import (
 	"strings"
 )
 
-func isValidCrawlLink(link string) bool {
+func IsValidCrawlLink(link string) bool {
   return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
 }
 
 
 // adds edge to DB, returns (true) if neighbor already in DB
-func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
+func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
 	// check to see if node already exists
 	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/neighbors"
 	req, _ := http.NewRequest("GET", url, nil)
@@ -59,7 +59,7 @@ func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 }
 
 // connects to given databse
-func connectToDB() error {
+func ConnectToDB() error {
 	resp, err := http.Get(os.Getenv("GRAPH_DB_ENDPOINT") + "/metrics")
 	if err != nil {
 		return err

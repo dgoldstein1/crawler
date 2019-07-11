@@ -3,9 +3,10 @@ package main
 import(
   "os"
   "log"
-  "fmt"
-  "io"
   "github.com/urfave/cli"
+  "strconv"
+  "github.com/dgoldstein1/crawler/crawler"
+  wiki "github.com/dgoldstein1/crawler/wikipedia"
 )
 
 // checks environment for required env vars
@@ -21,50 +22,49 @@ func parseEnv() {
       logFatalf("'%s' was not set", v)
     }
   }
+  i, err := strconv.Atoi("-42")
+}
+
+// runs crawler with given functions
+func runCrawler(
+  isValidCrawlLink crawler.IsValidCrawlLinkFunction,
+  connectToDB crawler.ConnectToDBFunction,
+  addEdgeIfDoesNotExist crawler.AddEdgeFunction,
+) {
+  // assert environment
+  parseEnv()
+  crawler.Crawl(
+    os.Getenv("STARTING_ENDPOINT"),
+    isValidCrawlLink,
+
+  )
 }
 
 func main() {
-
     app := cli.NewApp()
-    app.Name = "wikipedia_cralwer"
-    app.Usage = "crawl wikipedia adding link articles into a graph database"
+    app.Name = "crawler"
+    app.Usage = " acustomizable web crawler script for different websites"
+    app.Description = "web crawl different URLs and add similar urls to a graph database"
     app.Version = "0.1.0"
-    // EXAMPLE: Append to an existing template
-    cli.AppHelpTemplate = fmt.Sprintf(`%s
-
-  WEBSITE: http://davidcharlesgoldstein.com
-
-  SUPPORT: david0124816@gmail.com
-
-  `, cli.AppHelpTemplate)
-
-    cli.AppHelpTemplate = `NAME:
-     {{.Name}} - {{.Usage}}
-  USAGE:
-     {{.HelpName}} {{if .VisibleFlags}}[global options]{{end}}{{if .Commands}} command [command options]{{end}} {{if .ArgsUsage}}{{.ArgsUsage}}{{else}}[arguments...]{{end}}
-     {{if len .Authors}}
-  AUTHOR:
-     David Goldstein
-  REQUIRED ENV VARS:
-    - "GRAPH_DB_ENDPOINT" - endpoint of the graphDB
-    - "STARTING_ENDPOINT"- starting endpoint to crawl from
-    - "MAX_CRAWL_DEPTH" - maximum depth to crawl
-  COPYRIGHT:
-     MIT
-  VERSION:
-     {{.Version}}
-     {{end}}
-  `
-
-    // EXAMPLE: Replace the `HelpPrinter` func
-    cli.HelpPrinter = func(w io.Writer, templ string, data interface{}) {
-      fmt.Println("Ha HA.  I pwnd the help!!1")
+    app.Commands = []cli.Command{
+      {
+        Name:    "wikipedia",
+        Aliases: []string{"w"},
+        Usage:   "crawl on wikipedia articles",
+        Action:  func(c *cli.Context) error {
+          runCrawler(
+            wiki.IsValidCrawlLink,
+            wiki.ConnectToDB,
+            wiki.AddEdgeIfDoesNotExist,
+          )
+          return nil
+        },
+      },
     }
 
-    err := cli.NewApp().Run(os.Args)
+    err := app.Run(os.Args)
     if err != nil {
       log.Fatal(err)
     }
-
 
 }
