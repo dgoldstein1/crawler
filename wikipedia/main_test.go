@@ -55,7 +55,6 @@ func TestParseEnv(t *testing.T) {
         os.Unsetenv(v)
         parseEnv()
         AssertEqual(t, len(errors), 1)
-        AssertEqual(t, errors[0], "'" + v + "' was not set")
         // cleanup
         os.Setenv(v, "TEST")
       })
