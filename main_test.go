@@ -1,4 +1,4 @@
-package wikipedia
+package main
 
 import (
   "testing"
@@ -9,19 +9,6 @@ import (
 
 func TestMain(t *testing.T)  {
 
-}
-
-func TestisValidCrawlLink(t *testing.T) {
-  t.Run("does not crawl on links with ':'", func(t *testing.T) {
-    assert.Equal(t, isValidCrawlLink("/wiki/Category:Spinash"), false)
-    assert.Equal(t, isValidCrawlLink("/wiki/Test:"), false)
-  })
-  t.Run("does not crawl on links not starting with '/wiki/'", func(t *testing.T ){
-    assert.Equal(t, isValidCrawlLink("https://wikipedia.org"), false)
-    assert.Equal(t, isValidCrawlLink("/wiki"), false)
-    assert.Equal(t, isValidCrawlLink("wikipedia/wiki/"), false)
-    assert.Equal(t, isValidCrawlLink("/wiki/binary"), true)
-  })
 }
 
 func TestParseEnv(t *testing.T) {

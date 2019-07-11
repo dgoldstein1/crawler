@@ -7,7 +7,13 @@ import (
 	"encoding/json"
 	"time"
 	"bytes"
+	"strings"
 )
+
+func isValidCrawlLink(link string) bool {
+  return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
+}
+
 
 // adds edge to DB, returns (true) if neighbor already in DB
 func addEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {

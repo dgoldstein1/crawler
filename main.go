@@ -1,7 +1,6 @@
-package wikipedia
+package main
 
 import(
-  "strings"
   "os"
   "log"
   "fmt"
@@ -22,10 +21,6 @@ func parseEnv() {
       logFatalf("'%s' was not set", v)
     }
   }
-}
-
-func isValidCrawlLink(link string) bool {
-  return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
 }
 
 func main() {

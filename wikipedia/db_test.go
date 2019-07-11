@@ -4,7 +4,6 @@ import (
 	"testing"
 	"os"
 	"github.com/jarcoal/httpmock"
-	"errors"
 	"net/http"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -13,12 +12,25 @@ import (
 var dbEndpoint = "http://localhost:17474"
 var notFoundError = `dial tcp 127.0.0.1:17474: connect: connection refused`
 
+func TestisValidCrawlLink(t *testing.T) {
+  t.Run("does not crawl on links with ':'", func(t *testing.T) {
+    assert.Equal(t, isValidCrawlLink("/wiki/Category:Spinash"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki/Test:"), false)
+  })
+  t.Run("does not crawl on links not starting with '/wiki/'", func(t *testing.T ){
+    assert.Equal(t, isValidCrawlLink("https://wikipedia.org"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki"), false)
+    assert.Equal(t, isValidCrawlLink("wikipedia/wiki/"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki/binary"), true)
+  })
+}
+
 func TestAddToDb(t *testing.T) {
 	t.Run("fails when no server found", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 		// first test bad response
 		alreadyInDB, err := addEdgeIfDoesNotExist("testNode", "3")
-		asser.EqualError(t, err, errors.New("Get http://localhost:17474/neighbors?node=testNode: " + notFoundError))
+		assert.EqualError(t, err, "Get http://localhost:17474/neighbors?node=testNode: " + notFoundError)
 		assert.Equal(t, alreadyInDB, false)
 	})
 	t.Run("neighbor node already exists", func(t *testing.T){
@@ -32,7 +44,7 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
-		asser.EqualError(t, err, nil)
+		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, true)
 	})
 	t.Run("adds node when current node doesnt exist (404)", func(t *testing.T){
@@ -59,7 +71,7 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
-		asser.EqualError(t, err, nil)
+		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, false)
 	})
 	t.Run("adds node when current exists", func(t *testing.T){
@@ -83,7 +95,7 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
-		asser.EqualError(t, err, nil)
+		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, false)
 	})
 }
@@ -93,7 +105,7 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	t.Run("fails when db not found", func(t *testing.T) {
 		err := connectToDB()
-		asser.EqualError(t, err, errors.New("Get http://localhost:17474/metrics: " + notFoundError))
+		assert.EqualError(t, err, "Get http://localhost:17474/metrics: " + notFoundError)
 	})
 	t.Run("succeed when server exists", func(t *testing.T){
 		// mock out http endpoint
@@ -104,6 +116,6 @@ func TestConnectToDB(t *testing.T) {
 			httpmock.NewStringResponder(200, `TEST`))
 
 		err := connectToDB()
-		asser.EqualError(t, err, nil)
+		assert.Nil(t, err)
 	})
 }
