@@ -3,6 +3,7 @@ package crawler
 import (
 	"testing"
 	"strings"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCrawl(t *testing.T) {
@@ -22,7 +23,7 @@ func TestCrawl(t *testing.T) {
 
 		t.Run("only filters on links starting with regex", func (t *testing.T)  {
 			for _, url := range nodesAdded {
-				AssertEqual(t, strings.HasPrefix(url, "/wiki/"), true)
+				assert.Equal(t, strings.HasPrefix(url, "/wiki/"), true)
 			}
 		})
 		t.Run("only filters on links starting with regex", func (t *testing.T)  {

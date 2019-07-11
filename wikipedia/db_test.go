@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 )
 
 var dbEndpoint = "http://localhost:17474"
@@ -17,8 +18,8 @@ func TestAddToDb(t *testing.T) {
 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 		// first test bad response
 		alreadyInDB, err := addEdgeIfDoesNotExist("testNode", "3")
-		AssertErrorEqual(t, err, errors.New("Get http://localhost:17474/neighbors?node=testNode: " + notFoundError))
-		AssertEqual(t, alreadyInDB, false)
+		asser.EqualError(t, err, errors.New("Get http://localhost:17474/neighbors?node=testNode: " + notFoundError))
+		assert.Equal(t, alreadyInDB, false)
 	})
 	t.Run("neighbor node already exists", func(t *testing.T){
 		// mock out http endpoint
@@ -31,8 +32,8 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
-		AssertErrorEqual(t, err, nil)
-		AssertEqual(t, alreadyInDB, true)
+		asser.EqualError(t, err, nil)
+		assert.Equal(t, alreadyInDB, true)
 	})
 	t.Run("adds node when current node doesnt exist (404)", func(t *testing.T){
 		// mock out http endpoint
@@ -58,8 +59,8 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
-		AssertErrorEqual(t, err, nil)
-		AssertEqual(t, alreadyInDB, false)
+		asser.EqualError(t, err, nil)
+		assert.Equal(t, alreadyInDB, false)
 	})
 	t.Run("adds node when current exists", func(t *testing.T){
 		// mock out http endpoint
@@ -82,8 +83,8 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 		alreadyInDB, err := addEdgeIfDoesNotExist("2", "6")
-		AssertErrorEqual(t, err, nil)
-		AssertEqual(t, alreadyInDB, false)
+		asser.EqualError(t, err, nil)
+		assert.Equal(t, alreadyInDB, false)
 	})
 }
 
@@ -92,7 +93,7 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	t.Run("fails when db not found", func(t *testing.T) {
 		err := connectToDB()
-		AssertErrorEqual(t, err, errors.New("Get http://localhost:17474/metrics: " + notFoundError))
+		asser.EqualError(t, err, errors.New("Get http://localhost:17474/metrics: " + notFoundError))
 	})
 	t.Run("succeed when server exists", func(t *testing.T){
 		// mock out http endpoint
@@ -103,6 +104,6 @@ func TestConnectToDB(t *testing.T) {
 			httpmock.NewStringResponder(200, `TEST`))
 
 		err := connectToDB()
-		AssertErrorEqual(t, err, nil)
+		asser.EqualError(t, err, nil)
 	})
 }

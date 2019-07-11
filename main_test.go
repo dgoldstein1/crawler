@@ -4,6 +4,7 @@ import (
   "testing"
   "os"
   "fmt"
+  "github.com/stretchr/testify/assert"
 )
 
 func TestMain(t *testing.T)  {
@@ -12,14 +13,14 @@ func TestMain(t *testing.T)  {
 
 func TestisValidCrawlLink(t *testing.T) {
   t.Run("does not crawl on links with ':'", func(t *testing.T) {
-    AssertEqual(t, isValidCrawlLink("/wiki/Category:Spinash"), false)
-    AssertEqual(t, isValidCrawlLink("/wiki/Test:"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki/Category:Spinash"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki/Test:"), false)
   })
   t.Run("does not crawl on links not starting with '/wiki/'", func(t *testing.T ){
-    AssertEqual(t, isValidCrawlLink("https://wikipedia.org"), false)
-    AssertEqual(t, isValidCrawlLink("/wiki"), false)
-    AssertEqual(t, isValidCrawlLink("wikipedia/wiki/"), false)
-    AssertEqual(t, isValidCrawlLink("/wiki/binary"), true)
+    assert.Equal(t, isValidCrawlLink("https://wikipedia.org"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki"), false)
+    assert.Equal(t, isValidCrawlLink("wikipedia/wiki/"), false)
+    assert.Equal(t, isValidCrawlLink("/wiki/binary"), true)
   })
 }
 
@@ -47,14 +48,14 @@ func TestParseEnv(t *testing.T) {
     }
     // positive test
     parseEnv()
-    AssertEqual(t, len(errors), 0)
+    assert.Equal(t, len(errors), 0)
 
     for _, v := range requiredEnvs {
       t.Run("it validates " + v, func (t *testing.T)  {
         errors = []string{}
         os.Unsetenv(v)
         parseEnv()
-        AssertEqual(t, len(errors), 1)
+        assert.Equal(t, len(errors), 1)
         // cleanup
         os.Setenv(v, "TEST")
       })
