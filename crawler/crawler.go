@@ -6,7 +6,13 @@ import (
 )
 
 // crawls a domain and saves relatives links to a db
-func Crawl(endpoint string, isValidCrawlLink IsValidCrawlLinkFunction, maxDepth int, connectToDB ConnectToDBFunction, addEdgeIfDoesNotExist AddEdgeFunction) {
+func Crawl(
+	endpoint string,
+	isValidCrawlLink IsValidCrawlLinkFunction,
+	maxDepth int,
+	connectToDB ConnectToDBFunction,
+	addEdgeIfDoesNotExist AddEdgeFunction,
+) {
 	err := connectToDB()
 	if err != nil {
 		log.Fatal(err)

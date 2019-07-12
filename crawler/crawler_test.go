@@ -1,9 +1,9 @@
 package crawler
 
 import (
-	"testing"
-	"strings"
 	"github.com/stretchr/testify/assert"
+	"strings"
+	"testing"
 )
 
 func TestCrawl(t *testing.T) {
@@ -18,15 +18,15 @@ func TestCrawl(t *testing.T) {
 			nodesAdded = append(nodesAdded, neighborNode)
 			return false, nil
 		}
-		connectToDB := func() error {return nil}
+		connectToDB := func() error { return nil }
 		Crawl("https://en.wikipedia.org/wiki/String_cheese", isValidCrawlLink, 2, connectToDB, addEdge)
 
-		t.Run("only filters on links starting with regex", func (t *testing.T)  {
+		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			for _, url := range nodesAdded {
 				assert.Equal(t, strings.HasPrefix(url, "/wiki/"), true)
 			}
 		})
-		t.Run("only filters on links starting with regex", func (t *testing.T)  {
+		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			for _, url := range nodesAdded {
 				if strings.Contains(url, ":") {
 					t.Errorf("Did not expect '%s' to contain ':'", url)

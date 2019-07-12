@@ -1,19 +1,18 @@
 package wikipedia
 
 import (
-	"os"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
-	"time"
 	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"os"
 	"strings"
+	"time"
 )
 
 func IsValidCrawlLink(link string) bool {
-  return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
+	return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
 }
-
 
 // adds edge to DB, returns (true) if neighbor already in DB
 func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
@@ -24,14 +23,14 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 	q.Add("node", currentNode)
 	req.URL.RawQuery = q.Encode()
 	client := http.Client{
-		Timeout : time.Duration(5 * time.Second),
+		Timeout: time.Duration(5 * time.Second),
 	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return false, err
 	}
 	// 404 is current node does not exist
-	if (resp.StatusCode != 404) {
+	if resp.StatusCode != 404 {
 		// check that neighbor node is not in response
 		defer resp.Body.Close()
 		var neighbors []string
@@ -47,11 +46,11 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 		}
 	}
 	// no neighbor node, POST node to DB
-	jsonValue, _ := json.Marshal( map[string][]string {
-		"neighbors" : []string{neighborNode},
+	jsonValue, _ := json.Marshal(map[string][]string{
+		"neighbors": []string{neighborNode},
 	})
-  req, _ = http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-  req.Header.Set("Content-Type", "application/json")
+	req, _ = http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
 	req.URL.RawQuery = q.Encode()
 	// return the result of the POST request
 	_, err = client.Do(req)
