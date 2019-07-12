@@ -29,7 +29,7 @@ func TestAddToDb(t *testing.T) {
 	t.Run("fails when no server found", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 		// first test bad response
-		alreadyInDB, err := AddEdgeIfDoesNotExist("testNode", "3")
+		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Aditus_felium")
 		assert.EqualError(t, err, "Get http://localhost:17474/neighbors?node=testNode: "+notFoundError)
 		assert.Equal(t, alreadyInDB, false)
 	})
@@ -40,7 +40,7 @@ func TestAddToDb(t *testing.T) {
 		// Exact URL match
 		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=2",
 			func(req *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(200, []string{"5", "3", "6"})
+				return httpmock.NewJsonResponse(200, []int{3276454, 2343, 2343})
 			},
 		)
 		alreadyInDB, err := AddEdgeIfDoesNotExist("2", "6")

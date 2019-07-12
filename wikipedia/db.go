@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"strconv"
 )
 
 func IsValidCrawlLink(link string) bool {
@@ -17,11 +18,17 @@ func IsValidCrawlLink(link string) bool {
 
 // adds edge to DB, returns (true) if neighbor already in DB
 func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
+	// get wiki IDs
+	currentNodeId, err := getArticleId(currentNode)
+	neighborNodeId, err := getArticleId(neighborNode)
+	if err != nil {
+		return false, err
+	}
 	// check to see if node already exists
 	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/neighbors"
 	req, _ := http.NewRequest("GET", url, nil)
 	q := req.URL.Query()
-	q.Add("node", currentNode)
+	q.Add("node", strconv.Itoa(currentNodeId))
 	req.URL.RawQuery = q.Encode()
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
@@ -34,21 +41,23 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 	if resp.StatusCode != 404 {
 		// check that neighbor node is not in response
 		defer resp.Body.Close()
-		var neighbors []string
+		var neighbors []int
 		err = json.NewDecoder(resp.Body).Decode(&neighbors)
 		if err != nil {
 			return false, err
 		}
 		for _, v := range neighbors {
 			// neighbor node found for this node
-			if v == neighborNode {
+			if v == neighborNodeId {
 				return true, nil
 			}
 		}
 	}
-	// no neighbor node, POST node to DB
-	jsonValue, _ := json.Marshal(map[string][]string{
-		"neighbors": []string{neighborNode},
+
+
+	// POST node to DB
+	jsonValue, _ := json.Marshal(map[string][]int{
+		"neighbors": []int{neighborNodeId},
 	})
 	req, _ = http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
