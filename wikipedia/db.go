@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
 )
 
 func IsValidCrawlLink(link string) bool {
@@ -55,6 +56,43 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 	// return the result of the POST request
 	_, err = client.Do(req)
 	return false, err
+}
+
+type PropertiesResponse struct {
+	Parse PropertiesValues `json:"parse"`
+}
+type PropertiesValues struct {
+	Pageid int `json:"pageid"`
+	// drop title and properties keys
+}
+// gets wikipedia int id from article url
+func getArticleId(page string) (int, error) {
+	parsedPage := strings.TrimPrefix(page, "/wiki/")
+	url := "https://en.wikipedia.org/w/api.php"
+	req, _ := http.NewRequest("GET", url, nil)
+	q := req.URL.Query()
+	q.Add("format", "json")
+	q.Add("action", "parse")
+	q.Add("page", parsedPage)
+	q.Add("prop", "properties")
+	req.URL.RawQuery = q.Encode()
+	client := http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+			return 0, err
+	}
+	props := &PropertiesResponse{}
+	err = json.Unmarshal(body, &props)
+	if (err == nil && props.Parse.Pageid == 0) {
+		err = fmt.Errorf("Page not found '%s'", page)
+	}
+	return props.Parse.Pageid, err
 }
 
 // connects to given databse

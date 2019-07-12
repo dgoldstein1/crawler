@@ -119,3 +119,17 @@ func TestConnectToDB(t *testing.T) {
 		assert.Nil(t, err)
 	})
 }
+
+func TestGetArticleId(t *testing.T)  {
+	t.Run("makes request to correct endpoint", func(t *testing.T) {
+		id, err := getArticleId("/wiki/Pet_door")
+		assert.Nil(t, err)
+		assert.Equal(t, 3276454, id)
+	})
+	t.Run("returns error on bad url", func(t *testing.T) {
+		id, err := getArticleId("/wiki/DFSDfet_doorSDFUSFU#UFFISd")
+		assert.NotNil(t, err)
+		assert.Equal(t, 0, id)
+	})
+
+}
