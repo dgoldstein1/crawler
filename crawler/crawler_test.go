@@ -19,7 +19,7 @@ func TestCrawl(t *testing.T) {
 			return false, nil
 		}
 		connectToDB := func() error { return nil }
-		Crawl("https://en.wikipedia.org/wiki/String_cheese", isValidCrawlLink, 2, connectToDB, addEdge)
+		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, isValidCrawlLink, connectToDB, addEdge)
 
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			for _, url := range nodesAdded {

@@ -8,8 +8,8 @@ import (
 // crawls a domain and saves relatives links to a db
 func Crawl(
 	endpoint string,
-	isValidCrawlLink IsValidCrawlLinkFunction,
 	maxDepth int,
+	isValidCrawlLink IsValidCrawlLinkFunction,
 	connectToDB ConnectToDBFunction,
 	addEdgeIfDoesNotExist AddEdgeFunction,
 ) {
