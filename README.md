@@ -8,7 +8,7 @@ Script to crawl html and add href links to a [big-data graph DB](https://github.
 # run crawl on wikipedia
 GRAPH_DB_ENDPOINT="http://localhost:5000"
 STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese"
-MAX_CRAWL_DEPTH=15
+MAX_CRAWL_DEPTH=2
 ./crawler
 ```
 

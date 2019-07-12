@@ -22,7 +22,13 @@ func parseEnv() {
       logFatalf("'%s' was not set", v)
     }
   }
-  i, err := strconv.Atoi("-42")
+  i, err := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
+  if (err != nil) {
+    logFatalf(err.Error())
+  }
+  if (i < 1 ) {
+    logFatalf("MAX_CRAWL_DEPTH must be greater than 1 but was '%i'", i)
+  }
 }
 
 // runs crawler with given functions
@@ -33,11 +39,11 @@ func runCrawler(
 ) {
   // assert environment
   parseEnv()
-  crawler.Crawl(
-    os.Getenv("STARTING_ENDPOINT"),
-    isValidCrawlLink,
-
-  )
+  // crawler.Crawl(
+  //   os.Getenv("STARTING_ENDPOINT"),
+  //   isValidCrawlLink,
+  //
+  // )
 }
 
 func main() {

@@ -31,7 +31,7 @@ func TestParseEnv(t *testing.T) {
     }
 
     for _, v := range requiredEnvs {
-      os.Setenv(v, "TEST")
+      os.Setenv(v, "5")
     }
     // positive test
     parseEnv()
@@ -42,9 +42,16 @@ func TestParseEnv(t *testing.T) {
         errors = []string{}
         os.Unsetenv(v)
         parseEnv()
-        assert.Equal(t, len(errors), 1)
+        assert.Equal(t, len(errors) > 0, true)
         // cleanup
-        os.Setenv(v, "TEST")
+        os.Setenv(v, "5")
       })
     }
+
+    t.Run("fails if MAX_CRAWL_DEPTH is not valid int", func (t *testing.T)  {
+
+    })
+    t.Run("fails if MAX_CRAWL_DEPTH is not a positive int", func (t *testing.T)  {
+
+    })
 }
