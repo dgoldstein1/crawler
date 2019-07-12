@@ -40,11 +40,15 @@ func runCrawler(
 ) {
 	// assert environment
 	parseEnv()
-	// crawler.Crawl(
-	//   os.Getenv("STARTING_ENDPOINT"),
-	//   isValidCrawlLink,
-	//
-	// )
+  // crawl with passed args
+  MAX_CRAWL_DEPTH, _ := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
+	crawler.Crawl(
+	  os.Getenv("STARTING_ENDPOINT"),
+    MAX_CRAWL_DEPTH,
+	  isValidCrawlLink,
+    connectToDB,
+	  addEdgeIfDoesNotExist,
+	)
 }
 
 func main() {
