@@ -87,6 +87,7 @@ jobs:
 
   push-docker-image:
     <<: *defaults
+    machine : true
     steps:
       - checkout
       - attach_workspace:
