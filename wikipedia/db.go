@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var prefex = "/wiki/"
+var baseEndpoint = "https://en.wikipedia.org"
 func IsValidCrawlLink(link string) bool {
 	return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
 }
@@ -19,7 +21,7 @@ func IsValidCrawlLink(link string) bool {
 // adds edge to DB, returns (true) if neighbor already in DB
 func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
 	// get wiki IDs
-	currentNodeId, err := getArticleId(currentNode)
+	currentNodeId, err := getArticleId(strings.TrimPrefix(currentNode, baseEndpoint))
 	if err != nil {
 		return false, err
 	}
