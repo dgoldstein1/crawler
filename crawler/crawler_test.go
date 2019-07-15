@@ -4,23 +4,38 @@ import (
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+	"fmt"
 )
 
 func TestCrawl(t *testing.T) {
-	t.Run("wikipedia", func(t *testing.T) {
+	isValidCrawlLink := func(url string) bool {
+		return strings.HasPrefix(url, "/wiki/") && !strings.Contains(url, ":")
+	}
+	nodesAdded := []string{}
+	addEdge := func(currNode string, neighborNode string) (bool, error) {
+		nodesAdded = append(nodesAdded, neighborNode)
+		return false, nil
+	}
+	connectToDB := func() error { return nil }
+	endpoint := "https://en.wikipedia.org/wiki/String_cheese"
+
+	// mock out log.Fatalf
+	originLogPrintf := logMsg
+	defer func() { logMsg = originLogPrintf }()
+	logs := []string{}
+	logMsg = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			logs = append(logs, fmt.Sprintf(format, args))
+		} else {
+			logs = append(logs, format)
+		}
+	}
+
+
+	t.Run("works with isValidCrawlLink", func(t *testing.T) {
+		nodesAdded = []string{}
 		// function doing setup of tests
-		isValidCrawlLink := func(url string) bool {
-			return strings.HasPrefix(url, "/wiki/") && !strings.Contains(url, ":")
-		}
-
-		nodesAdded := []string{}
-		addEdge := func(currNode string, neighborNode string) (bool, error) {
-			nodesAdded = append(nodesAdded, neighborNode)
-			return false, nil
-		}
-		connectToDB := func() error { return nil }
 		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, isValidCrawlLink, connectToDB, addEdge)
-
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			for _, url := range nodesAdded {
 				assert.Equal(t, strings.HasPrefix(url, "/wiki/"), true)
@@ -33,5 +48,42 @@ func TestCrawl(t *testing.T) {
 				}
 			}
 		})
+	})
+
+	t.Run("does not recurse if edge exists", func(t *testing.T) {
+		nodesAdded = []string{}
+		allEdgesExist := func (curr string, next string) (bool, error)  {
+			nodesAdded = append(nodesAdded, curr)
+			return true, nil
+		}
+		Crawl(
+			endpoint,
+			2,
+			isValidCrawlLink,
+			connectToDB,
+			allEdgesExist,
+		)
+
+		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
+		// only add first recursion nodes, ~30,000 on second recursion
+		assert.LessOrEqual(t, len(nodesAdded), 100)
+	})
+	t.Run("recurses if edge does not exist", func (t *testing.T)  {
+		nodesAdded = []string{}
+		allEdgesExist := func (curr string, next string) (bool, error)  {
+			nodesAdded = append(nodesAdded, curr)
+			return false, nil
+		}
+		Crawl(
+			endpoint,
+			2,
+			isValidCrawlLink,
+			connectToDB,
+			allEdgesExist,
+		)
+
+		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
+		// only add first recursion nodes, ~30,000 on second recursion
+		assert.GreaterOrEqual(t, len(nodesAdded), 100)
 	})
 }
