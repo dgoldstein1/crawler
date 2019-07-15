@@ -66,7 +66,7 @@ func TestCrawl(t *testing.T) {
 
 		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
 		// only add first recursion nodes, ~30,000 on second recursion
-		assert.LessOrEqual(t, len(nodesAdded), 100)
+		assert.Equal(t, len(nodesAdded) < 100, true)
 	})
 	t.Run("recurses if edge does not exist", func (t *testing.T)  {
 		nodesAdded = []string{}
@@ -84,6 +84,6 @@ func TestCrawl(t *testing.T) {
 
 		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
 		// only add first recursion nodes, ~30,000 on second recursion
-		assert.GreaterOrEqual(t, len(nodesAdded), 100)
+		assert.Equal(t, len(nodesAdded) > 100, true)
 	})
 }
