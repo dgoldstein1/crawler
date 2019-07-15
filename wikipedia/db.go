@@ -3,13 +3,13 @@ package wikipedia
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-	"fmt"
-	"strconv"
 )
 
 func IsValidCrawlLink(link string) bool {
@@ -20,6 +20,9 @@ func IsValidCrawlLink(link string) bool {
 func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
 	// get wiki IDs
 	currentNodeId, err := getArticleId(currentNode)
+	if err != nil {
+		return false, err
+	}
 	neighborNodeId, err := getArticleId(neighborNode)
 	if err != nil {
 		return false, err
@@ -37,7 +40,7 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 	if err != nil {
 		return false, err
 	}
-	// 404 is current node does not exist
+	// current node exists
 	if resp.StatusCode != 404 {
 		// check that neighbor node is not in response
 		defer resp.Body.Close()
@@ -46,14 +49,13 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 		if err != nil {
 			return false, err
 		}
+		// check if neighbor is alredy added
 		for _, v := range neighbors {
-			// neighbor node found for this node
 			if v == neighborNodeId {
 				return true, nil
 			}
 		}
 	}
-
 
 	// POST node to DB
 	jsonValue, _ := json.Marshal(map[string][]int{
@@ -67,6 +69,7 @@ func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error
 	return false, err
 }
 
+
 type PropertiesResponse struct {
 	Parse PropertiesValues `json:"parse"`
 }
@@ -77,8 +80,7 @@ type PropertiesValues struct {
 // gets wikipedia int id from article url
 func getArticleId(page string) (int, error) {
 	parsedPage := strings.TrimPrefix(page, "/wiki/")
-	url := "https://en.wikipedia.org/w/api.php"
-	req, _ := http.NewRequest("GET", url, nil)
+	req, _ := http.NewRequest("GET", os.Getenv("WIKI_API_ENDPOINT"), nil)
 	q := req.URL.Query()
 	q.Add("format", "json")
 	q.Add("action", "parse")
@@ -94,11 +96,11 @@ func getArticleId(page string) (int, error) {
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-			return 0, err
+		return 0, err
 	}
 	props := &PropertiesResponse{}
 	err = json.Unmarshal(body, &props)
-	if (err == nil && props.Parse.Pageid == 0) {
+	if err == nil && props.Parse.Pageid == 0 {
 		err = fmt.Errorf("Page not found '%s'", page)
 	}
 	return props.Parse.Pageid, err

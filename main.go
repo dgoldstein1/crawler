@@ -40,14 +40,14 @@ func runCrawler(
 ) {
 	// assert environment
 	parseEnv()
-  // crawl with passed args
-  MAX_CRAWL_DEPTH, _ := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
+	// crawl with passed args
+	MAX_CRAWL_DEPTH, _ := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
 	crawler.Crawl(
-	  os.Getenv("STARTING_ENDPOINT"),
-    MAX_CRAWL_DEPTH,
-	  isValidCrawlLink,
-    connectToDB,
-	  addEdgeIfDoesNotExist,
+		os.Getenv("STARTING_ENDPOINT"),
+		MAX_CRAWL_DEPTH,
+		isValidCrawlLink,
+		connectToDB,
+		addEdgeIfDoesNotExist,
 	)
 }
 
@@ -63,6 +63,7 @@ func main() {
 			Aliases: []string{"w"},
 			Usage:   "crawl on wikipedia articles",
 			Action: func(c *cli.Context) error {
+				os.Setenv("WIKI_API_ENDPOINT", "https://en.wikipedia.org/w/api.php")
 				runCrawler(
 					wiki.IsValidCrawlLink,
 					wiki.ConnectToDB,

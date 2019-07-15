@@ -1,7 +1,6 @@
 package wikipedia
 
 import (
-	"encoding/json"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -10,7 +9,7 @@ import (
 )
 
 var dbEndpoint = "http://localhost:17474"
-var notFoundError = `dial tcp 127.0.0.1:17474: connect: connection refused`
+var wikiApiEndpoint = "http://localhost:3000"
 
 func TestIsValidCrawlLink(t *testing.T) {
 	t.Run("does not crawl on links with ':'", func(t *testing.T) {
@@ -28,9 +27,10 @@ func TestIsValidCrawlLink(t *testing.T) {
 func TestAddToDb(t *testing.T) {
 	t.Run("fails when no server found", func(t *testing.T) {
 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
+		os.Setenv("WIKI_API_ENDPOINT", wikiApiEndpoint)
 		// first test bad response
-		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Aditus_felium")
-		assert.EqualError(t, err, "Get http://localhost:17474/neighbors?node=testNode: "+notFoundError)
+		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet", "/wiki/Animal")
+		assert.EqualError(t, err, "Get http://localhost:3000?action=parse&format=json&page=Pet&prop=properties: dial tcp 127.0.0.1:3000: connect: connection refused")
 		assert.Equal(t, alreadyInDB, false)
 	})
 	t.Run("neighbor node already exists", func(t *testing.T) {
@@ -38,12 +38,14 @@ func TestAddToDb(t *testing.T) {
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
 		// Exact URL match
-		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=2",
-			func(req *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(200, []int{3276454, 2343, 2343})
-			},
-		)
-		alreadyInDB, err := AddEdgeIfDoesNotExist("2", "6")
+		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=3276454",
+			httpmock.NewStringResponder(200, `[11039790]`))
+		httpmock.RegisterResponder("GET", "http://localhost:3000?action=parse&format=json&page=Pet_door&prop=properties",
+			httpmock.NewStringResponder(200, `{"parse":{"title":"Pet door","pageid":3276454,"properties":[{"name":"wikibase_item","*":"Q943110"}]}}`))
+		httpmock.RegisterResponder("GET", "http://localhost:3000?action=parse&format=json&page=Animal&prop=properties",
+			httpmock.NewStringResponder(200, `{"parse":{"title":"Animal","pageid":11039790,"properties":[{"name":"wikibase-shortdesc","*":"kingdom of motile multicellular eukaryotic heterotrophic organisms"},{"name":"wikibase_item","*":"Q729"},{"name":"wikibase-badge-Q17437798","*":""}]}}`))
+
+		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Animal")
 		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, true)
 	})
@@ -52,7 +54,16 @@ func TestAddToDb(t *testing.T) {
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
 		// Exact URL match
-		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=2",
+
+		httpmock.RegisterResponder("GET", wikiApiEndpoint+"?action=parse&format=json&page=Pet_door&prop=properties",
+			httpmock.NewStringResponder(200, `{"parse":{"title":"Pet door","pageid":3276454,"properties":[{"name":"wikibase_item","*":"Q943110"}]}}`))
+		httpmock.RegisterResponder("GET", wikiApiEndpoint+"?action=parse&format=json&page=Animal&prop=properties",
+			httpmock.NewStringResponder(200, `{"parse":{"title":"Animal","pageid":11039790,"properties":[{"name":"wikibase-shortdesc","*":"kingdom of motile multicellular eukaryotic heterotrophic organisms"},{"name":"wikibase_item","*":"Q729"},{"name":"wikibase-badge-Q17437798","*":""}]}}`))
+
+		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=3276454",
+			httpmock.NewStringResponder(200, `[]`))
+
+		httpmock.RegisterResponder("POST", dbEndpoint+"/neighbors?node=3276454",
 			func(req *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(404, map[string]interface{}{
 					"code":  404,
@@ -60,17 +71,8 @@ func TestAddToDb(t *testing.T) {
 				})
 			},
 		)
-		httpmock.RegisterResponder("POST", dbEndpoint+"/neighbors?node=2",
-			func(req *http.Request) (*http.Response, error) {
-				body := make(map[string][]string)
-				err := json.NewDecoder(req.Body).Decode(&body)
-				if err != nil {
-					t.Error(err)
-				}
-				return httpmock.NewJsonResponse(200, body)
-			},
-		)
-		alreadyInDB, err := AddEdgeIfDoesNotExist("2", "6")
+
+		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Animal")
 		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, false)
 	})
@@ -79,22 +81,18 @@ func TestAddToDb(t *testing.T) {
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
 		// Exact URL match
-		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=2",
-			func(req *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(200, []string{"5", "3", "7"})
-			},
-		)
-		httpmock.RegisterResponder("POST", dbEndpoint+"/neighbors?node=2",
-			func(req *http.Request) (*http.Response, error) {
-				body := make(map[string][]string)
-				err := json.NewDecoder(req.Body).Decode(&body)
-				if err != nil {
-					t.Error(err)
-				}
-				return httpmock.NewJsonResponse(200, body)
-			},
-		)
-		alreadyInDB, err := AddEdgeIfDoesNotExist("2", "6")
+		httpmock.RegisterResponder("GET", wikiApiEndpoint+"?action=parse&format=json&page=Pet_door&prop=properties",
+			httpmock.NewStringResponder(200, `{"parse":{"title":"Pet door","pageid":3276454,"properties":[{"name":"wikibase_item","*":"Q943110"}]}}`))
+		httpmock.RegisterResponder("GET", wikiApiEndpoint+"?action=parse&format=json&page=Animal&prop=properties",
+			httpmock.NewStringResponder(200, `{"parse":{"title":"Animal","pageid":11039790,"properties":[{"name":"wikibase-shortdesc","*":"kingdom of motile multicellular eukaryotic heterotrophic organisms"},{"name":"wikibase_item","*":"Q729"},{"name":"wikibase-badge-Q17437798","*":""}]}}`))
+
+		httpmock.RegisterResponder("GET", dbEndpoint+"/neighbors?node=3276454",
+			httpmock.NewStringResponder(200, `[]`))
+
+		httpmock.RegisterResponder("POST", dbEndpoint+"/neighbors?node=3276454",
+			httpmock.NewStringResponder(200, `{neighbors : []}`))
+
+		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Animal")
 		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, false)
 	})
@@ -105,7 +103,7 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	t.Run("fails when db not found", func(t *testing.T) {
 		err := ConnectToDB()
-		assert.EqualError(t, err, "Get http://localhost:17474/metrics: "+notFoundError)
+		assert.EqualError(t, err, "Get http://localhost:17474/metrics: dial tcp 127.0.0.1:17474: connect: connection refused")
 	})
 	t.Run("succeed when server exists", func(t *testing.T) {
 		// mock out http endpoint
@@ -120,11 +118,12 @@ func TestConnectToDB(t *testing.T) {
 	})
 }
 
-func TestGetArticleId(t *testing.T)  {
+func TestGetArticleId(t *testing.T) {
+	os.Setenv("WIKI_API_ENDPOINT", "https://en.wikipedia.org/w/api.php")
 	t.Run("makes request to correct endpoint", func(t *testing.T) {
-		id, err := getArticleId("/wiki/Pet_door")
+		id, err := getArticleId("/wiki/Pet")
 		assert.Nil(t, err)
-		assert.Equal(t, 3276454, id)
+		assert.Equal(t, 25079, id)
 	})
 	t.Run("returns error on bad url", func(t *testing.T) {
 		id, err := getArticleId("/wiki/DFSDfet_doorSDFUSFU#UFFISd")
