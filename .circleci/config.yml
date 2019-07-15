@@ -60,7 +60,7 @@ jobs:
           name : "Push results to code coverage (master only)"
           command : |
             if [[ "$CIRCLE_BRANCH" == "master" ]]; then
-              export CC_TEST_REPORTER_ID=
+              export CC_TEST_REPORTER_ID=d43bf52d0ac2724c201048cc4ecfa00c3bcab7987d01959991419e9cc85e635f
               curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
               chmod +x ./cc-test-reporter
               ./cc-test-reporter format-coverage ./coverage.out -t gocov
