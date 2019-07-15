@@ -1,13 +1,10 @@
 FROM golang:1.9
 
-RUN go get github.com/golang/dep/cmd/dep
-RUN dep ensure -v
-RUN go build -v ./... -o build/crawler
+# setup go
+ENV GOBIN $GOPATH/bin
+ENV PATH $GOBIN:/usr/local/go/bin:$PATH
 
-
-# build executable
-RUN go install  ./...
+COPY build $GOBIN
 RUN crawler --version
-
 
 CMD ["crawler","$COMMAND"]
