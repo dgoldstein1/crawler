@@ -86,8 +86,9 @@ jobs:
   ############################
 
   push-docker-image:
-    <<: *defaults
-    machine : true
+    docker:
+      - image: docker:17.05.0-ce-git
+    working_directory: /go/src/github.com/dgoldstein1/crawler
     steps:
       - checkout
       - attach_workspace:
