@@ -12,12 +12,12 @@ func TestCrawl(t *testing.T) {
 		return strings.HasPrefix(url, "/wiki/") && !strings.Contains(url, ":")
 	}
 	nodesAdded := []string{}
-	addEdge := func(currNode string, neighborNode string) (bool, error) {
-		nodesAdded = append(nodesAdded, neighborNode)
-		return false, nil
+	addEdges := func(currNode string, neighborNodes []string) ([]string, error) {
+		nodesAdded = append(nodesAdded, neighborNodes...)
+		return neighborNodes, nil
 	}
 	connectToDB := func() error { return nil }
-	endpoint := "https://en.wikipedia.org/wiki/String_cheese"
+	// endpoint := "https://en.wikipedia.org/wiki/String_cheese"
 
 	// mock out log.Fatalf
 	originLogPrintf := logMsg
@@ -35,7 +35,7 @@ func TestCrawl(t *testing.T) {
 	t.Run("works with isValidCrawlLink", func(t *testing.T) {
 		nodesAdded = []string{}
 		// function doing setup of tests
-		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, isValidCrawlLink, connectToDB, addEdge)
+		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, isValidCrawlLink, connectToDB, addEdges)
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			for _, url := range nodesAdded {
 				assert.Equal(t, strings.HasPrefix(url, "/wiki/"), true)
@@ -50,40 +50,4 @@ func TestCrawl(t *testing.T) {
 		})
 	})
 
-	t.Run("does not recurse if edge exists", func(t *testing.T) {
-		nodesAdded = []string{}
-		allEdgesExist := func (curr string, next string) (bool, error)  {
-			nodesAdded = append(nodesAdded, curr)
-			return true, nil
-		}
-		Crawl(
-			endpoint,
-			2,
-			isValidCrawlLink,
-			connectToDB,
-			allEdgesExist,
-		)
-
-		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
-		// only add first recursion nodes, ~30,000 on second recursion
-		assert.Equal(t, len(nodesAdded) < 100, true)
-	})
-	t.Run("recurses if edge does not exist", func (t *testing.T)  {
-		nodesAdded = []string{}
-		allEdgesExist := func (curr string, next string) (bool, error)  {
-			nodesAdded = append(nodesAdded, curr)
-			return false, nil
-		}
-		Crawl(
-			endpoint,
-			2,
-			isValidCrawlLink,
-			connectToDB,
-			allEdgesExist,
-		)
-
-		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
-		// only add first recursion nodes, ~30,000 on second recursion
-		assert.Equal(t, len(nodesAdded) > 100, true)
-	})
 }

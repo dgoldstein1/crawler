@@ -2,7 +2,7 @@ package crawler
 
 // add edge to graph in DB
 // return 'true' if edge already exists
-type AddEdgeFunction func(string, string) (bool, error)
+type AddEdgeFunction func(string, []string) ([]string, error)
 
 // establishes initial connection to DB
 type ConnectToDBFunction func() error

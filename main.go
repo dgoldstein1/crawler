@@ -67,7 +67,7 @@ func main() {
 				runCrawler(
 					wiki.IsValidCrawlLink,
 					wiki.ConnectToDB,
-					wiki.AddEdgeIfDoesNotExist,
+					wiki.AddEdgesIfDoNotExist,
 				)
 				return nil
 			},
