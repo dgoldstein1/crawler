@@ -17,7 +17,7 @@ func TestCrawl(t *testing.T) {
 		return neighborNodes, nil
 	}
 	connectToDB := func() error { return nil }
-	// endpoint := "https://en.wikipedia.org/wiki/String_cheese"
+	endpoint := "https://en.wikipedia.org/wiki/String_cheese"
 
 	// mock out log.Fatalf
 	originLogPrintf := logMsg
@@ -50,4 +50,18 @@ func TestCrawl(t *testing.T) {
 		})
 	})
 
+	t.Run("adds nodes correctly", func (t *testing.T)  {
+		nodesAdded = []string{}
+		Crawl(
+			endpoint,
+			2,
+			isValidCrawlLink,
+			connectToDB,
+			addEdges,
+		)
+
+		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
+		// only add first recursion nodes, ~30,000 on second recursion
+		assert.Equal(t, len(nodesAdded) > 100, true)
+	})
 }
