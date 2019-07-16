@@ -29,7 +29,7 @@ func TestAddToDb(t *testing.T) {
 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 		os.Setenv("WIKI_API_ENDPOINT", wikiApiEndpoint)
 		// first test bad response
-		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet", "/wiki/Animal")
+		alreadyInDB, err := AddEdgesIfDoNotExist("/wiki/Pet", []string{"/wiki/Animal"})
 		assert.EqualError(t, err, "Get http://localhost:3000?action=parse&format=json&page=Pet&prop=properties: dial tcp 127.0.0.1:3000: connect: connection refused")
 		assert.Equal(t, alreadyInDB, false)
 	})
@@ -45,7 +45,7 @@ func TestAddToDb(t *testing.T) {
 		httpmock.RegisterResponder("GET", "http://localhost:3000?action=parse&format=json&page=Animal&prop=properties",
 			httpmock.NewStringResponder(200, `{"parse":{"title":"Animal","pageid":11039790,"properties":[{"name":"wikibase-shortdesc","*":"kingdom of motile multicellular eukaryotic heterotrophic organisms"},{"name":"wikibase_item","*":"Q729"},{"name":"wikibase-badge-Q17437798","*":""}]}}`))
 
-		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Animal")
+		alreadyInDB, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal"})
 		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, true)
 	})
@@ -72,7 +72,7 @@ func TestAddToDb(t *testing.T) {
 			},
 		)
 
-		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Animal")
+		alreadyInDB, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal"})
 		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, false)
 	})
@@ -92,7 +92,7 @@ func TestAddToDb(t *testing.T) {
 		httpmock.RegisterResponder("POST", dbEndpoint+"/neighbors?node=3276454",
 			httpmock.NewStringResponder(200, `{neighbors : []}`))
 
-		alreadyInDB, err := AddEdgeIfDoesNotExist("/wiki/Pet_door", "/wiki/Animal")
+		alreadyInDB, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal"})
 		assert.Nil(t, err)
 		assert.Equal(t, alreadyInDB, false)
 	})
