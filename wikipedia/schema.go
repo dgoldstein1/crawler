@@ -6,6 +6,10 @@ type GraphResponseError struct {
 	Error string `json:"error"`
 }
 
+type GraphResponseSuccess struct {
+	NeighborsAdded []int `json:"neighborsAdded"`
+}
+
 type PropertiesResponse struct {
 	Parse PropertiesValues `json:"parse"`
 }

@@ -83,11 +83,12 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	if err != nil {
 		return []string{}, err
 	}
-	newEdgesNodes := []int{}
-	err = json.Unmarshal(body, &newEdgesNodes)
+	resp := GraphResponseSuccess{}
+	err = json.Unmarshal(body, &resp)
 	if err != nil {
 		return []string{}, err
 	}
+	newEdgesNodes := resp.NeighborsAdded
 	// compare new ids to
 	nodesAdded := []string{}
 	for _, n := range newEdgesNodes {
