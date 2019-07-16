@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"log"
+	"errors"
 )
 
 // globals
@@ -59,6 +60,25 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
      Timeout: time.Duration(5 * time.Second),
   }
 	res, err := client.Do(req)
+	if err != nil {
+		return []string{}, err
+	}
+	// assert response is 200
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return []string{}, err
+		}
+		errResp := GraphResponseError{}
+		err = json.Unmarshal(body, &errResp)
+		if err != nil {
+			return []string{}, err
+		}
+		// fails with error
+		return []string{}, errors.New(errResp.Error)
+	}
+
+	// 200 level response, continue as normal
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return []string{}, err
@@ -77,13 +97,6 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 }
 
 
-type PropertiesResponse struct {
-	Parse PropertiesValues `json:"parse"`
-}
-type PropertiesValues struct {
-	Pageid int `json:"pageid"`
-	// drop title and properties keys
-}
 // gets wikipedia int id from article url
 func getArticleId(page string) (int, error) {
 	parsedPage := strings.TrimPrefix(page, "/wiki/")
