@@ -71,3 +71,15 @@ func TestCrawl(t *testing.T) {
 		assert.Equal(t, len(nodesAdded) <= 30000, true)
 	})
 }
+
+func TestAsyncInt(t *testing.T)  {
+	t.Run("able to increment succesfully", func (t *testing.T)  {
+		nodesVisited := asyncInt(0)
+		nodesVisited.incr(253)
+		assert.Equal(t, int32(nodesVisited), int32(253))
+	})
+	t.Run("able to get succesfully", func(t *testing.T) {
+		nodesVisited := asyncInt(25342)
+		assert.Equal(t, nodesVisited.get(), int32(25342))
+	})
+}
