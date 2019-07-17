@@ -3,15 +3,15 @@ package wikipedia
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"log"
-	"errors"
 )
 
 // globals
@@ -56,9 +56,9 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	req.URL.RawQuery = q.Encode()
 
 	// return the result of the POST request
-   client := http.Client{
-     Timeout: time.Duration(5 * time.Second),
-  }
+	client := http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		return []string{}, err
@@ -96,7 +96,6 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	}
 	return nodesAdded, nil
 }
-
 
 // gets wikipedia int id from article url
 func getArticleId(page string) (int, error) {

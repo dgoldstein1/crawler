@@ -1,10 +1,10 @@
 package crawler
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
-	"fmt"
 )
 
 func TestCrawl(t *testing.T) {
@@ -31,7 +31,6 @@ func TestCrawl(t *testing.T) {
 		}
 	}
 
-
 	t.Run("works with isValidCrawlLink", func(t *testing.T) {
 		nodesAdded = []string{}
 		// function doing setup of tests
@@ -50,7 +49,7 @@ func TestCrawl(t *testing.T) {
 		})
 	})
 
-	t.Run("adds nodes correctly", func (t *testing.T)  {
+	t.Run("adds nodes correctly", func(t *testing.T) {
 		nodesAdded = []string{}
 		logs = []string{}
 		Crawl(
@@ -64,7 +63,7 @@ func TestCrawl(t *testing.T) {
 			},
 		)
 
-		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
+		assert.Equal(t, "starting at ["+endpoint+"]", logs[0])
 		assert.Equal(t, 1, len(logs))
 		// only add first recursion nodes, ~30,000 on second recursion
 		assert.Equal(t, len(nodesAdded) >= 100, true)
@@ -72,8 +71,8 @@ func TestCrawl(t *testing.T) {
 	})
 }
 
-func TestAsyncInt(t *testing.T)  {
-	t.Run("able to increment succesfully", func (t *testing.T)  {
+func TestAsyncInt(t *testing.T) {
+	t.Run("able to increment succesfully", func(t *testing.T) {
 		nodesVisited := asyncInt(0)
 		nodesVisited.incr(253)
 		assert.Equal(t, int32(nodesVisited), int32(253))

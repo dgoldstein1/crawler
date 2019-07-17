@@ -7,6 +7,7 @@ import (
 )
 
 var logMsg = log.Printf
+
 // crawls a domain and saves relatives links to a db
 func Crawl(
 	endpoint string,
@@ -62,13 +63,12 @@ func Crawl(
 	c.Wait()
 }
 
-
 // increments async int by "n"
 func (c *asyncInt) incr(n int32) int32 {
-    return atomic.AddInt32((*int32)(c), n)
+	return atomic.AddInt32((*int32)(c), n)
 }
 
 // decrement astnc int
 func (c *asyncInt) get() int32 {
-    return atomic.LoadInt32((*int32)(c))
+	return atomic.LoadInt32((*int32)(c))
 }

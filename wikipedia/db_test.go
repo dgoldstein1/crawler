@@ -69,7 +69,7 @@ func TestAddToDb(t *testing.T) {
 			httpmock.NewStringResponder(200, `{"parse":{"title":"Animal","pageid":11039790,"properties":[{"name":"wikibase-shortdesc","*":"kingdom of motile multicellular eukaryotic heterotrophic organisms"},{"name":"wikibase_item","*":"Q729"},{"name":"wikibase-badge-Q17437798","*":""}]}}`))
 		httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=3276454",
 			func(req *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(200,  map[string]interface{}{"neighborsAdded" : []int{11039790}})
+				return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{11039790}})
 			},
 		)
 
@@ -92,7 +92,7 @@ func TestAddToDb(t *testing.T) {
 			httpmock.NewStringResponder(200, `{"parse":{"title":"Animal","pageid":11039790,"properties":[{"name":"wikibase-shortdesc","*":"kingdom of motile multicellular eukaryotic heterotrophic organisms"},{"name":"wikibase_item","*":"Q729"},{"name":"wikibase-badge-Q17437798","*":""}]}}`))
 		httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=3276454",
 			func(req *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(200,  map[string]interface{}{"neighborsAdded" : []int{11039790}})
+				return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{11039790}})
 			},
 		)
 
