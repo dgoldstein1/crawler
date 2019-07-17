@@ -4,7 +4,7 @@ import (
 	"github.com/dgoldstein1/crawler/crawler"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
 	"github.com/urfave/cli"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 )

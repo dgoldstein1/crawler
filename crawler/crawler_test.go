@@ -31,27 +31,41 @@ func TestCrawl(t *testing.T) {
 		}
 	}
 
+	errors := []string{}
+	logErr = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			errors = append(errors, fmt.Sprintf(format, args))
+		} else {
+			errors = append(errors, format)
+		}
+	}
+
 	t.Run("works with isValidCrawlLink", func(t *testing.T) {
 		nodesAdded = []string{}
 		// function doing setup of tests
 		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, isValidCrawlLink, connectToDB, addEdges)
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
+			errors = []string{}
 			for _, url := range nodesAdded {
 				assert.Equal(t, strings.HasPrefix(url, "/wiki/"), true)
 			}
+			assert.Equal(t, []string{}, errors)
 		})
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
+			errors = []string{}
 			for _, url := range nodesAdded {
 				if strings.Contains(url, ":") {
 					t.Errorf("Did not expect '%s' to contain ':'", url)
 				}
 			}
+			assert.Equal(t, []string{}, errors)
 		})
 	})
 
 	t.Run("adds nodes correctly", func(t *testing.T) {
 		nodesAdded = []string{}
 		logs = []string{}
+		errors = []string{}
 		Crawl(
 			endpoint,
 			100,
@@ -68,6 +82,7 @@ func TestCrawl(t *testing.T) {
 		// only add first recursion nodes, ~30,000 on second recursion
 		assert.Equal(t, len(nodesAdded) >= 100, true)
 		assert.Equal(t, len(nodesAdded) <= 30000, true)
+		assert.Equal(t, []string{}, errors)
 	})
 }
 
