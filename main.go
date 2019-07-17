@@ -16,19 +16,19 @@ func parseEnv() {
 	requiredEnvs := []string{
 		"GRAPH_DB_ENDPOINT",
 		"STARTING_ENDPOINT",
-		"MAX_CRAWL_DEPTH",
+		"MAX_APPROX_NODES",
 	}
 	for _, v := range requiredEnvs {
 		if os.Getenv(v) == "" {
 			logFatalf("'%s' was not set", v)
 		}
 	}
-	i, err := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
+	i, err := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	if err != nil {
 		logFatalf(err.Error())
 	}
 	if i < 1 {
-		logFatalf("MAX_CRAWL_DEPTH must be greater than 1 but was '%i'", i)
+		logFatalf("MAX_APPROX_NODES must be greater than 1 but was '%i'", i)
 	}
 }
 
@@ -41,10 +41,10 @@ func runCrawler(
 	// assert environment
 	parseEnv()
 	// crawl with passed args
-	MAX_CRAWL_DEPTH, _ := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
+	MAX_APPROX_NODES, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	crawler.Crawl(
 		os.Getenv("STARTING_ENDPOINT"),
-		int32(MAX_CRAWL_DEPTH),
+		int32(MAX_APPROX_NODES),
 		isValidCrawlLink,
 		connectToDB,
 		addEdgeIfDoesNotExist,

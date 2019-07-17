@@ -27,7 +27,7 @@ func TestParseEnv(t *testing.T) {
 	requiredEnvs := []string{
 		"GRAPH_DB_ENDPOINT",
 		"STARTING_ENDPOINT",
-		"MAX_CRAWL_DEPTH",
+		"MAX_APPROX_NODES",
 	}
 
 	for _, v := range requiredEnvs {
@@ -48,10 +48,10 @@ func TestParseEnv(t *testing.T) {
 		})
 	}
 
-	t.Run("fails if MAX_CRAWL_DEPTH is not valid int", func(t *testing.T) {
+	t.Run("fails if MAX_APPROX_NODES is not valid int", func(t *testing.T) {
 
 	})
-	t.Run("fails if MAX_CRAWL_DEPTH is not a positive int", func(t *testing.T) {
+	t.Run("fails if MAX_APPROX_NODES is not a positive int", func(t *testing.T) {
 
 	})
 }
