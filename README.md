@@ -26,7 +26,7 @@ docker build . -t dgoldstein1/wikipedia-path
 # run crawl on wikipedia
 export GRAPH_DB_ENDPOINT="http://localhost:5000"
 export STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese"
-export MAX_APPROX_NODES=1000 # approximate number of nodes to visit (+/- one order of magnitude)
+export MAX_APPROX_NODES=1000 # approximate number of nodes to visit (+/- one order of magnitude), set to '-1' for unlimited crawl
 ./build/crawler --help
 ```
 
