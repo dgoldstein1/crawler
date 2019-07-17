@@ -55,7 +55,7 @@ func TestCrawl(t *testing.T) {
 		logs = []string{}
 		Crawl(
 			endpoint,
-			1,
+			100,
 			isValidCrawlLink,
 			connectToDB,
 			func(currNode string, neighborNodes []string) ([]string, error) {
@@ -67,6 +67,7 @@ func TestCrawl(t *testing.T) {
 		assert.Equal(t, "starting at [" + endpoint + "]", logs[0])
 		assert.Equal(t, 1, len(logs))
 		// only add first recursion nodes, ~30,000 on second recursion
-		assert.Equal(t, len(nodesAdded) > 100, true)
+		assert.Equal(t, len(nodesAdded) >= 100, true)
+		assert.Equal(t, len(nodesAdded) <= 30000, true)
 	})
 }

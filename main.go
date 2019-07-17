@@ -44,7 +44,7 @@ func runCrawler(
 	MAX_CRAWL_DEPTH, _ := strconv.Atoi(os.Getenv("MAX_CRAWL_DEPTH"))
 	crawler.Crawl(
 		os.Getenv("STARTING_ENDPOINT"),
-		MAX_CRAWL_DEPTH,
+		int32(MAX_CRAWL_DEPTH),
 		isValidCrawlLink,
 		connectToDB,
 		addEdgeIfDoesNotExist,

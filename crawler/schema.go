@@ -9,3 +9,6 @@ type ConnectToDBFunction func() error
 
 // check if valid url string for crawling
 type IsValidCrawlLinkFunction func(string) bool
+
+// number of nodesVisited
+type asyncInt int32
