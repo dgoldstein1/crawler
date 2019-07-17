@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,7 +15,7 @@ import (
 )
 
 // globals
-var logMsg = log.Printf
+var logErr = log.Errorf
 var prefex = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
 
@@ -37,7 +37,7 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	for _, n := range neighborNodes {
 		neighborNodeId, err := getArticleId(n)
 		if err != nil {
-			logMsg("ERROR: %s", err.Error())
+			logErr("Could not get id for '%s': %s", n, err.Error())
 		} else {
 			neighborsMap[neighborNodeId] = n
 			neighborsIds = append(neighborsIds, neighborNodeId)
