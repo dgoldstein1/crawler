@@ -2,11 +2,12 @@ package crawler
 
 import (
 	"github.com/gocolly/colly"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"sync/atomic"
 )
 
-var logMsg = log.Printf
+var logMsg = log.Infof
+var logErr = log.Errorf
 
 // crawls a domain and saves relatives links to a db
 func Crawl(
@@ -43,13 +44,13 @@ func Crawl(
 		// add new nodes to current request URL
 		nodesAdded, err := addEdgesIfDoNotExist(e.Request.URL.String(), validURLs)
 		if err != nil {
-			logMsg("ERROR: %s", err.Error())
+			logErr("error adding '%s': %s", e.Request.URL.String(), err.Error())
 			return
 		}
 		// check stopping condition
 		nodesVisited.incr(int32(len(nodesAdded)))
 		// recurse on new nodes if no stopping condition yet
-		if nodesVisited.get() < approximateMaxNodes {
+		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
 				c.Visit("https://en.wikipedia.org" + url)
 			}

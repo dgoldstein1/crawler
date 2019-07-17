@@ -3,16 +3,20 @@ package main
 import (
 	"github.com/dgoldstein1/crawler/crawler"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
-	"log"
 	"os"
 	"strconv"
 )
 
 // checks environment for required env vars
 var logFatalf = log.Fatalf
+var logMsg = log.Infof
 
 func parseEnv() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
 	requiredEnvs := []string{
 		"GRAPH_DB_ENDPOINT",
 		"STARTING_ENDPOINT",
@@ -21,13 +25,16 @@ func parseEnv() {
 	for _, v := range requiredEnvs {
 		if os.Getenv(v) == "" {
 			logFatalf("'%s' was not set", v)
+		} else {
+			// print out config
+			logMsg("%s=%s", v, os.Getenv(v))
 		}
 	}
 	i, err := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	if err != nil {
 		logFatalf(err.Error())
 	}
-	if i < 1 {
+	if i < 1 && i != -1 {
 		logFatalf("MAX_APPROX_NODES must be greater than 1 but was '%i'", i)
 	}
 }
