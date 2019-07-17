@@ -12,7 +12,7 @@ Script to crawl html and add href links to a [big-data graph DB](https://github.
 # run crawl on wikipedia
 export GRAPH_DB_ENDPOINT="http://localhost:5000"
 export STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese"
-export MAX_CRAWL_DEPTH=2
+export MAX_APPROX_NODES=10000000000 # approximate number of nodes to visit (+/- one order of magnitude)
 ./crawler
 ```
 

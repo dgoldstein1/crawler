@@ -3,8 +3,10 @@ package wikipedia
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,73 +14,89 @@ import (
 	"time"
 )
 
+// globals
+var logMsg = log.Printf
 var prefex = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
+
+// determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
 	return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":")
 }
 
-// adds edge to DB, returns (true) if neighbor already in DB
-func AddEdgeIfDoesNotExist(currentNode string, neighborNode string) (bool, error) {
+// adds edge to DB, returns new neighbors added (to crawl on)
+func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string, error) {
 	// get wiki IDs
 	currentNodeId, err := getArticleId(strings.TrimPrefix(currentNode, baseEndpoint))
 	if err != nil {
-		return false, err
+		return []string{}, err
 	}
-	neighborNodeId, err := getArticleId(neighborNode)
-	if err != nil {
-		return false, err
+	// make a map of id[value]
+	neighborsMap := make(map[int]string)
+	neighborsIds := []int{}
+	for _, n := range neighborNodes {
+		neighborNodeId, err := getArticleId(n)
+		if err != nil {
+			logMsg("ERROR: %s", err.Error())
+		} else {
+			neighborsMap[neighborNodeId] = n
+			neighborsIds = append(neighborsIds, neighborNodeId)
+		}
 	}
-	// check to see if node already exists
-	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/neighbors"
-	req, _ := http.NewRequest("GET", url, nil)
+
+	// POST new neighbors to db
+	jsonValue, _ := json.Marshal(map[string][]int{
+		"neighbors": neighborsIds,
+	})
+	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/edges"
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
+	req.Header.Set("Content-Type", "application/json")
 	q := req.URL.Query()
 	q.Add("node", strconv.Itoa(currentNodeId))
 	req.URL.RawQuery = q.Encode()
+
+	// return the result of the POST request
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
-	resp, err := client.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
-		return false, err
+		return []string{}, err
 	}
-	// current node exists
-	if resp.StatusCode != 404 {
-		// check that neighbor node is not in response
-		defer resp.Body.Close()
-		var neighbors []int
-		err = json.NewDecoder(resp.Body).Decode(&neighbors)
+	// assert response is 200
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return false, err
+			return []string{}, err
 		}
-		// check if neighbor is alredy added
-		for _, v := range neighbors {
-			if v == neighborNodeId {
-				return true, nil
-			}
+		errResp := GraphResponseError{}
+		err = json.Unmarshal(body, &errResp)
+		if err != nil {
+			return []string{}, err
 		}
+		// fails with error
+		return []string{}, errors.New(errResp.Error)
 	}
 
-	// POST node to DB
-	jsonValue, _ := json.Marshal(map[string][]int{
-		"neighbors": []int{neighborNodeId},
-	})
-	req, _ = http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-	req.Header.Set("Content-Type", "application/json")
-	req.URL.RawQuery = q.Encode()
-	// return the result of the POST request
-	_, err = client.Do(req)
-	return false, err
+	// 200 level response, continue as normal
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return []string{}, err
+	}
+	resp := GraphResponseSuccess{}
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		return []string{}, err
+	}
+	newEdgesNodes := resp.NeighborsAdded
+	// compare new ids to
+	nodesAdded := []string{}
+	for _, n := range newEdgesNodes {
+		nodesAdded = append(nodesAdded, neighborsMap[n])
+	}
+	return nodesAdded, nil
 }
 
-
-type PropertiesResponse struct {
-	Parse PropertiesValues `json:"parse"`
-}
-type PropertiesValues struct {
-	Pageid int `json:"pageid"`
-	// drop title and properties keys
-}
 // gets wikipedia int id from article url
 func getArticleId(page string) (int, error) {
 	parsedPage := strings.TrimPrefix(page, "/wiki/")
