@@ -6,28 +6,30 @@ Script to crawl html and add href links to a [big-data graph DB](https://github.
 [![Test Coverage](https://api.codeclimate.com/v1/badges/0918dd40ac9fd5d3e454/test_coverage)](https://codeclimate.com/github/dgoldstein1/crawler/test_coverage)
 [![CircleCI](https://circleci.com/gh/dgoldstein1/crawler.svg?style=svg)](https://circleci.com/gh/dgoldstein1/crawler)
 
-## Run it
-
-```sh
-# run crawl on wikipedia
-export GRAPH_DB_ENDPOINT="http://localhost:5000"
-export STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese"
-export MAX_APPROX_NODES=10000000000 # approximate number of nodes to visit (+/- one order of magnitude)
-./crawler
-```
-
 ## Build it
 
 #### Binary
 
 ```sh
-go build
+dep ensure -v
+go install
 ```
 
 #### Docker
 ```sh
 docker build . -t dgoldstein1/wikipedia-path
 ```
+
+## Run it
+
+```sh
+# run crawl on wikipedia
+export GRAPH_DB_ENDPOINT="http://localhost:5000"
+export STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese"
+export MAX_APPROX_NODES=1000 # approximate number of nodes to visit (+/- one order of magnitude)
+./build/crawler --help
+```
+
 
 ## Development
 

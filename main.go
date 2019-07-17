@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/dgoldstein1/crawler/crawler"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
-	"github.com/urfave/cli"
 	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	"os"
 	"strconv"
 )
@@ -13,6 +13,9 @@ import (
 var logFatalf = log.Fatalf
 
 func parseEnv() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
 	requiredEnvs := []string{
 		"GRAPH_DB_ENDPOINT",
 		"STARTING_ENDPOINT",
