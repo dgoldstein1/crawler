@@ -8,6 +8,7 @@ import (
 
 var logMsg = log.Infof
 var logErr = log.Errorf
+var logWarn = log.Warnf
 
 // crawls a domain and saves relatives links to a db
 func Crawl(
@@ -52,7 +53,10 @@ func Crawl(
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
-				c.Visit(url)
+				err = c.Visit(url)
+				if err != nil {
+					logWarn("Error visiting '%s', %v", url, err)
+				}
 			}
 		}
 	})

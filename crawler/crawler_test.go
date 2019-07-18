@@ -31,6 +31,12 @@ func TestCrawl(t *testing.T) {
 		}
 	}
 
+	// mute warnings
+	originLogWarn := logWarn
+	defer func() { logWarn = originLogWarn }()
+	logWarn = func(format string, args ...interface{}) {}
+
+	// keep errors in array
 	errors := []string{}
 	logErr = func(format string, args ...interface{}) {
 		if len(args) > 0 {
