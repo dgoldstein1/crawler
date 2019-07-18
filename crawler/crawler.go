@@ -52,7 +52,7 @@ func Crawl(
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
-				c.Visit("https://en.wikipedia.org" + url)
+				c.Visit(url)
 			}
 		}
 	})

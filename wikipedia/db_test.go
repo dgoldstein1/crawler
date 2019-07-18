@@ -75,7 +75,7 @@ func TestAddToDb(t *testing.T) {
 
 		newNodes, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal"})
 		assert.Nil(t, err)
-		assert.Equal(t, newNodes, []string{"/wiki/Animal"})
+		assert.Equal(t, newNodes, []string{"https://en.wikipedia.org/wiki/Animal"})
 	})
 	t.Run("only returns new neighbors", func(t *testing.T) {
 		// mock out http endpoint
@@ -98,7 +98,7 @@ func TestAddToDb(t *testing.T) {
 
 		newNodes, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal", "/wiki/Pet_test"})
 		assert.Nil(t, err)
-		assert.Equal(t, newNodes, []string{"/wiki/Animal"})
+		assert.Equal(t, newNodes, []string{"https://en.wikipedia.org/wiki/Animal"})
 	})
 }
 
