@@ -95,7 +95,9 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	// compare new ids to
 	nodesAdded := []string{}
 	for _, n := range newEdgesNodes {
-		nodesAdded = append(nodesAdded, baseEndpoint+neighborsMap[n])
+		if neighborsMap[n] != "" {
+			nodesAdded = append(nodesAdded, baseEndpoint+neighborsMap[n])
+		}
 	}
 	return nodesAdded, nil
 }
