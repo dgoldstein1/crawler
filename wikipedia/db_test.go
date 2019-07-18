@@ -4,6 +4,7 @@ import (
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	// "net/http"
+	"errors"
 	"os"
 	"testing"
 )
@@ -124,15 +125,53 @@ func TestConnectToDB(t *testing.T) {
 
 func TestGetArticleId(t *testing.T) {
 	os.Setenv("WIKI_API_ENDPOINT", "https://en.wikipedia.org/w/api.php")
-	t.Run("makes request to correct endpoint", func(t *testing.T) {
-		id, err := getArticleId("/wiki/Pet")
-		assert.Nil(t, err)
-		assert.Equal(t, 25079, id)
-	})
 	t.Run("returns error on bad url", func(t *testing.T) {
 		id, err := getArticleId("/wiki/DFSDfet_doorSDFUSFU#UFFISd")
 		assert.NotNil(t, err)
 		assert.Equal(t, -1, id)
+	})
+	t.Run("returns correct values", func(t *testing.T) {
+		type test struct {
+			Page          string
+			ExpectedValue int
+			ExpectedError error
+		}
+
+		table := []test{
+			test{
+				"/wiki/Pet",
+				25079,
+				nil,
+			},
+			test{
+				"/wiki/Animal",
+				11039790,
+				nil,
+			},
+			test{
+				"/wiki/Tests_(album)",
+				24088322,
+				nil,
+			},
+			test{
+				"/wiki/The_Microphones",
+				847580,
+				nil,
+			},
+			test{
+				"/wiki/SDF32fj302jf",
+				-1,
+				errors.New("status code error: 404 404 Not Found"),
+			},
+		}
+
+		for _, v := range table {
+			t.Run(v.Page, func(t *testing.T) {
+				id, err := getArticleId(v.Page)
+				assert.Equal(t, id, v.ExpectedValue)
+				assert.Equal(t, err, v.ExpectedError)
+			})
+		}
 	})
 
 }
