@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -18,6 +20,7 @@ import (
 var logErr = log.Errorf
 var prefex = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
+var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
@@ -92,41 +95,43 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	// compare new ids to
 	nodesAdded := []string{}
 	for _, n := range newEdgesNodes {
-		nodesAdded = append(nodesAdded, baseEndpoint+ neighborsMap[n])
+		nodesAdded = append(nodesAdded, baseEndpoint+neighborsMap[n])
 	}
 	return nodesAdded, nil
 }
 
 // gets wikipedia int id from article url
 func getArticleId(page string) (int, error) {
-	parsedPage := strings.TrimPrefix(page, "/wiki/")
-	req, _ := http.NewRequest("GET", os.Getenv("WIKI_API_ENDPOINT"), nil)
-	q := req.URL.Query()
-	q.Add("format", "json")
-	q.Add("action", "parse")
-	q.Add("page", parsedPage)
-	q.Add("prop", "properties")
-	req.URL.RawQuery = q.Encode()
-	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
-	}
-	res, err := client.Do(req)
+	// Request the HTML page.
+	res, err := http.Get(baseEndpoint + page)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
-	body, err := ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return -1, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+	// Load the HTML document
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
-	props := &PropertiesResponse{}
-	err = json.Unmarshal(body, &props)
-	if err == nil && props.Parse.Pageid == 0 {
-		err = fmt.Errorf("Page not found '%s'", page)
+	// get first script tag
+	s := doc.Find("script").First().Text()
+	if s == "" {
+		return -1, fmt.Errorf("Could not parse id from <script> tag in '%s'", page)
 	}
-	return props.Parse.Pageid, err
+	// parse out "wgArticleId":25079,
+	id := strings.Split(s, `"wgArticleId":`)
+	if len(id) == 1 {
+		return -1, fmt.Errorf("Could not find 'wgArticleId' tag in '%s'", page)
+	}
+	// parse out 'id'
+	id = strings.Split(id[1], ",")
+	return strconv.Atoi(id[0])
 }
 
-// connects to given databse
+// connects to given databse and initializes scraper
 func ConnectToDB() error {
 	resp, err := http.Get(os.Getenv("GRAPH_DB_ENDPOINT") + "/metrics")
 	if err != nil {

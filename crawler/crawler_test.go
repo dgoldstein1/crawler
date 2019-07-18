@@ -80,7 +80,7 @@ func TestCrawl(t *testing.T) {
 			func(currNode string, neighborNodes []string) ([]string, error) {
 				temp := []string{}
 				for _, v := range neighborNodes {
-					temp = append(temp, "https://en.wikipedia.org" + v)
+					temp = append(temp, "https://en.wikipedia.org"+v)
 				}
 				nodesAdded = append(nodesAdded, temp...)
 				return temp, nil
