@@ -78,6 +78,12 @@ func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err e
 
 // gets wikipedia int id from article url
 func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
+	// create array of entries
+	entries := []TwoWayEntry{}
+	for _, s := range articles {
+		entries = append(entries, TwoWayEntry{s, 0})
+	}
+	// post to endpoint
 	return resp, err
 }
 
