@@ -136,6 +136,19 @@ func TestGetArticleIds(t *testing.T) {
 			},
 		},
 		Test{
+			Name:             "handles 500 code response",
+			Articles:         []string{"/wiki/test", "/wiki/test1", "/wiki/test2"},
+			ExpectedResponse: TwoWayResponse{},
+			ExpectedError:    errors.New("server error"),
+			Setup: func() {
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "server error", "code": 500})
+					},
+				)
+			},
+		},
+		Test{
 			Name:             "returns error on bad endpoint",
 			Articles:         []string{"/wiki/test", "/wiki/test1", "/wiki/test2"},
 			ExpectedResponse: TwoWayResponse{},
