@@ -92,10 +92,31 @@ func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
-	_, err = client.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
 		return resp, err
 	}
+	// read out response
+	if res.StatusCode != 200 {
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return resp, err
+		}
+		errResp := GraphResponseError{}
+		err = json.Unmarshal(body, &errResp)
+		if err != nil {
+			return resp, err
+		}
+		// fails with error
+		return resp, errors.New(errResp.Error)
+	}
+	// succesful request
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return resp, err
+	}
+	resp = TwoWayResponse{}
+	err = json.Unmarshal(body, &resp)
 	return resp, err
 }
 
