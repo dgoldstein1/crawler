@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -29,16 +27,20 @@ func IsValidCrawlLink(link string) bool {
 
 // adds edge to DB, returns new neighbors added (to crawl on)
 func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string, error) {
+	return []string{}, nil
+}
 
+// posts possible new edges to GRAPH_DB_ENDPOINT
+func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err error) {
 	// POST new neighbors to db
 	jsonValue, _ := json.Marshal(map[string][]int{
-		"neighbors": neighborsIds,
+		"neighbors": neighborIds,
 	})
 	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/edges"
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
 	q := req.URL.Query()
-	q.Add("node", strconv.Itoa(currentNodeId))
+	q.Add("node", strconv.Itoa(curr))
 	req.URL.RawQuery = q.Encode()
 
 	// return the result of the POST request
@@ -47,47 +49,36 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return []string{}, err
+		return resp, err
 	}
 	// assert response is 200
 	if res.StatusCode != 200 {
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return []string{}, err
+			return resp, err
 		}
 		errResp := GraphResponseError{}
 		err = json.Unmarshal(body, &errResp)
 		if err != nil {
-			return []string{}, err
+			return resp, err
 		}
 		// fails with error
-		return []string{}, errors.New(errResp.Error)
+		return resp, errors.New(errResp.Error)
 	}
 
 	// 200 level response, continue as normal
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return []string{}, err
+		return resp, err
 	}
-	resp := GraphResponseSuccess{}
+	resp = GraphResponseSuccess{}
 	err = json.Unmarshal(body, &resp)
-	if err != nil {
-		return []string{}, err
-	}
-	newEdgesNodes := resp.NeighborsAdded
-	// compare new ids to
-	nodesAdded := []string{}
-	for _, n := range newEdgesNodes {
-		if neighborsMap[n] != "" {
-			nodesAdded = append(nodesAdded, baseEndpoint+neighborsMap[n])
-		}
-	}
-	return nodesAdded, nil
+	return resp, err
 }
 
 // gets wikipedia int id from article url
-func getArticleIds(keys []string) (TwoWayResponse, error) {
-
+func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
+	return resp, err
 }
 
 // connects to given databse and initializes scraper

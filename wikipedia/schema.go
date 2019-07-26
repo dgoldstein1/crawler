@@ -9,13 +9,12 @@ type GraphResponseSuccess struct {
 	NeighborsAdded []int `json:"neighborsAdded"`
 }
 
-
 type TwoWayEntry struct {
-	Key string `json:"key"`
-	Value int `json:"value"`
+	Key   string `json:"key"`
+	Value int    `json:"value"`
 }
 
 type TwoWayResponse struct {
-	Errors []string `json:"errors"`
-	Entries []Entry `json:"entries"`
+	Errors  []string      `json:"errors"`
+	Entries []TwoWayEntry `json:"entries"`
 }
