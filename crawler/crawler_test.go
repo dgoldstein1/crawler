@@ -31,6 +31,12 @@ func TestCrawl(t *testing.T) {
 		}
 	}
 
+	// mute warnings
+	originLogWarn := logWarn
+	defer func() { logWarn = originLogWarn }()
+	logWarn = func(format string, args ...interface{}) {}
+
+	// keep errors in array
 	errors := []string{}
 	logErr = func(format string, args ...interface{}) {
 		if len(args) > 0 {
@@ -72,8 +78,12 @@ func TestCrawl(t *testing.T) {
 			isValidCrawlLink,
 			connectToDB,
 			func(currNode string, neighborNodes []string) ([]string, error) {
-				nodesAdded = append(nodesAdded, neighborNodes...)
-				return neighborNodes, nil
+				temp := []string{}
+				for _, v := range neighborNodes {
+					temp = append(temp, "https://en.wikipedia.org"+v)
+				}
+				nodesAdded = append(nodesAdded, temp...)
+				return temp, nil
 			},
 		)
 

@@ -70,7 +70,6 @@ func main() {
 			Aliases: []string{"w"},
 			Usage:   "crawl on wikipedia articles",
 			Action: func(c *cli.Context) error {
-				os.Setenv("WIKI_API_ENDPOINT", "https://en.wikipedia.org/w/api.php")
 				runCrawler(
 					wiki.IsValidCrawlLink,
 					wiki.ConnectToDB,
