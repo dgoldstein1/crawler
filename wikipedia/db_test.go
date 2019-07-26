@@ -26,6 +26,36 @@ func TestIsValidCrawlLink(t *testing.T) {
 	})
 }
 
+func TestAddEdgesIfDoNotExist(t *testing.T) {
+	os.Setenv("TWO_WAY_KV_ENDPOINT", twoWayEndpoint)
+	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	type Test struct {
+		Name             string
+		Setup            func()
+		CurrNode         string
+		NeighborNodes    []string
+		ExpectedResponse []string
+		ExpectedError    error
+	}
+	testTable := []Test{}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Setup()
+			resp, err := AddEdgesIfDoNotExist(test.CurrNode, test.NeighborNodes)
+			if err != nil && test.ExpectedError != nil {
+				assert.Equal(t, test.ExpectedError.Error(), err.Error())
+			} else {
+				assert.Equal(t, test.ExpectedError, err)
+			}
+			assert.Equal(t, test.ExpectedResponse, resp)
+			httpmock.Reset()
+		})
+	}
+}
+
 func TestAddNeighbors(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	httpmock.Activate()
