@@ -11,6 +11,7 @@ import (
 )
 
 var dbEndpoint = "http://localhost:17474"
+var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
 	t.Run("does not crawl on links with ':'", func(t *testing.T) {
@@ -58,7 +59,6 @@ func TestAddNeighbors(t *testing.T) {
 		Test{
 			Name: "returns error on 500 level code",
 			Setup: func() {
-				// Exact URL match
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
 						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "Not Found", "code": 500})
@@ -102,12 +102,47 @@ func TestGetArticleIds(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	type Test struct {
 		Name             string
-		Setup            func()
-		ExpectedResponse GraphResponseSuccess
-		ExpectedError    error
 		Articles         []string
+		ExpectedResponse TwoWayResponse
+		ExpectedError    error
+		Setup            func()
 	}
-	testTable := []Test{}
+	testTable := []Test{
+		Test{
+			Name:     "returns response from API succesfully",
+			Articles: []string{"/wiki/test", "/wiki/test1", "/wiki/test2"},
+			ExpectedResponse: TwoWayResponse{
+				Errors: []string{"test"},
+				Entries: []TwoWayEntry{
+					TwoWayEntry{"/wiki/test1", 2},
+					TwoWayEntry{"/wiki/test2", 3},
+					TwoWayEntry{"/wiki/test3", 4},
+				},
+			},
+			ExpectedError: nil,
+			Setup: func() {
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{
+							"errors": []string{"test"},
+							"entries": []TwoWayEntry{
+								TwoWayEntry{"/wiki/test1", 2},
+								TwoWayEntry{"/wiki/test2", 3},
+								TwoWayEntry{"/wiki/test3", 4},
+							},
+						})
+					},
+				)
+			},
+		},
+		Test{
+			Name:             "returns error on bad endpoint",
+			Articles:         []string{"/wiki/test", "/wiki/test1", "/wiki/test2"},
+			ExpectedResponse: TwoWayResponse{},
+			ExpectedError:    errors.New("Post http://localhost:17475/entries: no responder found"),
+			Setup:            func() {},
+		},
+	}
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
