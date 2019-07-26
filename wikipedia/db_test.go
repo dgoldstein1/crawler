@@ -4,7 +4,7 @@ import (
 	// "fmt"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
-	// "net/http"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -22,6 +22,50 @@ func TestIsValidCrawlLink(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("wikipedia/wiki/"), false)
 		assert.Equal(t, IsValidCrawlLink("/wiki/binary"), true)
 	})
+}
+
+func TestAddNeighbors(t *testing.T) {
+	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	type Test struct {
+		Name             string
+		Setup            func()
+		CurrNode         int
+		NeighborIds      []int
+		ExpectedResponse GraphResponseSuccess
+		ExpectedError    error
+	}
+	testTable := []Test{
+		Test{
+			Name: "returns correct response",
+			Setup: func() {
+				// Exact URL match
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+					},
+				)
+			},
+			CurrNode:    1,
+			NeighborIds: []int{2, 3, 4},
+			ExpectedResponse: GraphResponseSuccess{
+				NeighborsAdded: []int{2, 3, 4},
+			},
+			ExpectedError: nil,
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Setup()
+			resp, err := addNeighbors(test.CurrNode, test.NeighborIds)
+			assert.Equal(t, test.ExpectedError, err)
+			assert.Equal(t, test.ExpectedResponse, resp)
+			httpmock.Reset()
+		})
+	}
+
 }
 
 // func TestAddToDb(t *testing.T) {
