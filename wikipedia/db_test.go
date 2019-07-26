@@ -96,6 +96,34 @@ func TestAddNeighbors(t *testing.T) {
 
 }
 
+func TestGetArticleIds(t *testing.T) {
+	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	type Test struct {
+		Name             string
+		Setup            func()
+		ExpectedResponse GraphResponseSuccess
+		ExpectedError    error
+		Articles         []string
+	}
+	testTable := []Test{}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Setup()
+			resp, err := getArticleIds(test.Articles)
+			if err != nil && test.ExpectedError != nil {
+				assert.Equal(t, test.ExpectedError.Error(), err.Error())
+			} else {
+				assert.Equal(t, test.ExpectedError, err)
+			}
+			assert.Equal(t, test.ExpectedResponse, resp)
+			httpmock.Reset()
+		})
+	}
+}
+
 func TestConnectToDB(t *testing.T) {
 	dbEndpoint := "http://localhost:17474"
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
