@@ -29,23 +29,6 @@ func IsValidCrawlLink(link string) bool {
 
 // adds edge to DB, returns new neighbors added (to crawl on)
 func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string, error) {
-	// get wiki IDs
-	currentNodeId, err := getArticleId(strings.TrimPrefix(currentNode, baseEndpoint))
-	if err != nil {
-		return []string{}, err
-	}
-	// make a map of id[value]
-	neighborsMap := make(map[int]string)
-	neighborsIds := []int{}
-	for _, n := range neighborNodes {
-		neighborNodeId, err := getArticleId(n)
-		if err != nil {
-			logErr("Could not get id for '%s': %s", n, err.Error())
-		} else {
-			neighborsMap[neighborNodeId] = n
-			neighborsIds = append(neighborsIds, neighborNodeId)
-		}
-	}
 
 	// POST new neighbors to db
 	jsonValue, _ := json.Marshal(map[string][]int{
@@ -103,34 +86,8 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 }
 
 // gets wikipedia int id from article url
-func getArticleId(page string) (int, error) {
-	// Request the HTML page.
-	res, err := http.Get(baseEndpoint + page)
-	if err != nil {
-		return -1, err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		return -1, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
-	}
-	// Load the HTML document
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		return -1, err
-	}
-	// get first script tag
-	s := doc.Find("script").First().Text()
-	if s == "" {
-		return -1, fmt.Errorf("Could not parse id from <script> tag in '%s'", page)
-	}
-	// parse out "wgArticleId":25079,
-	id := strings.Split(s, `"wgArticleId":`)
-	if len(id) == 1 {
-		return -1, fmt.Errorf("Could not find 'wgArticleId' tag in '%s'", page)
-	}
-	// parse out 'id'
-	id = strings.Split(id[1], ",")
-	return strconv.Atoi(id[0])
+func getArticleIds(keys []string) (TwoWayResponse, error) {
+
 }
 
 // connects to given databse and initializes scraper
