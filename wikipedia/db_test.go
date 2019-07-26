@@ -97,7 +97,7 @@ func TestAddNeighbors(t *testing.T) {
 }
 
 func TestGetArticleIds(t *testing.T) {
-	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
+	os.Setenv("TWO_WAY_KV_ENDPOINT", twoWayEndpoint)
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 	type Test struct {

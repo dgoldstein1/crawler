@@ -83,7 +83,19 @@ func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	for _, s := range articles {
 		entries = append(entries, TwoWayEntry{s, 0})
 	}
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(entries)
 	// post to endpoint
+	url := os.Getenv("TWO_WAY_KV_ENDPOINT") + "/entries"
+	req, _ := http.NewRequest("POST", url, b)
+	req.Header.Set("Content-Type", "application/json")
+	client := http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	_, err = client.Do(req)
+	if err != nil {
+		return resp, err
+	}
 	return resp, err
 }
 
