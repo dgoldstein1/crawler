@@ -2,6 +2,7 @@ package wikipedia
 
 import (
 	// "fmt"
+	"errors"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -54,91 +55,46 @@ func TestAddNeighbors(t *testing.T) {
 			},
 			ExpectedError: nil,
 		},
+		Test{
+			Name: "returns error on 500 level code",
+			Setup: func() {
+				// Exact URL match
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "Not Found", "code": 500})
+					},
+				)
+			},
+			CurrNode:         1,
+			NeighborIds:      []int{2, 3, 4},
+			ExpectedResponse: GraphResponseSuccess{},
+			ExpectedError:    errors.New("Not Found"),
+		},
+		Test{
+			Name:             "Bad endpoint",
+			Setup:            func() {},
+			CurrNode:         1,
+			NeighborIds:      []int{2, 3, 4},
+			ExpectedResponse: GraphResponseSuccess{},
+			ExpectedError:    errors.New("Post http://localhost:17474/edges?node=1: no responder found"),
+		},
 	}
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Setup()
 			resp, err := addNeighbors(test.CurrNode, test.NeighborIds)
-			assert.Equal(t, test.ExpectedError, err)
+			if err != nil && test.ExpectedError != nil {
+				assert.Equal(t, test.ExpectedError.Error(), err.Error())
+			} else {
+				assert.Equal(t, test.ExpectedError, err)
+			}
 			assert.Equal(t, test.ExpectedResponse, resp)
 			httpmock.Reset()
 		})
 	}
 
 }
-
-// func TestAddToDb(t *testing.T) {
-// 	// keep errors in array
-// 	errors := []string{}
-// 	logErr = func(format string, args ...interface{}) {
-// 		if len(args) > 0 {
-// 			errors = append(errors, fmt.Sprintf(format, args))
-// 		} else {
-// 			errors = append(errors, format)
-// 		}
-// 	}
-// 	t.Run("fails when no server found", func(t *testing.T) {
-// 		os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
-// 		// first test bad response
-// 		newNodes, err := AddEdgesIfDoNotExist("/wiki/Pet", []string{"/wiki/Animal"})
-// 		assert.EqualError(t, err, "Post http://localhost:17474/edges?node=25079: dial tcp 127.0.0.1:17474: connect: connection refused")
-// 		assert.Equal(t, []string{}, newNodes)
-// 	})
-// 	t.Run("returns error when current node doesnt exist (404)", func(t *testing.T) {
-// 		// mock out http endpoint
-// 		httpmock.Activate()
-// 		defer httpmock.DeactivateAndReset()
-// 		// Exact URL match
-// 		httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=3276454",
-// 			func(req *http.Request) (*http.Response, error) {
-// 				return httpmock.NewJsonResponse(404, map[string]interface{}{
-// 					"code":  404,
-// 					"error": "Node was not found",
-// 				})
-// 			},
-// 		)
-//
-// 		newNodes, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal"})
-// 		assert.EqualError(t, err, "Node was not found")
-// 		assert.Equal(t, newNodes, []string{})
-// 	})
-// 	t.Run("succesfully adds neighbor nodes", func(t *testing.T) {
-// 		errors = []string{}
-// 		// mock out http endpoint
-// 		httpmock.Activate()
-// 		defer httpmock.DeactivateAndReset()
-// 		// Exact URL match
-//
-// 		httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=3276454",
-// 			func(req *http.Request) (*http.Response, error) {
-// 				return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{11039790}})
-// 			},
-// 		)
-//
-// 		newNodes, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal"})
-// 		assert.Nil(t, err)
-// 		assert.Equal(t, errors, []string{})
-// 		assert.Equal(t, newNodes, []string{"https://en.wikipedia.org/wiki/Animal"})
-// 	})
-// 	t.Run("only returns new neighbors", func(t *testing.T) {
-// 		// mock out http endpoint
-// 		// mock out http endpoint
-// 		httpmock.Activate()
-// 		defer httpmock.DeactivateAndReset()
-// 		// Exact URL match
-//
-// 		httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=3276454",
-// 			func(req *http.Request) (*http.Response, error) {
-// 				return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{11039790}})
-// 			},
-// 		)
-//
-// 		newNodes, err := AddEdgesIfDoNotExist("/wiki/Pet_door", []string{"/wiki/Animal", "/wiki/Petula_clark"})
-// 		assert.Nil(t, err)
-// 		assert.Equal(t, newNodes, []string{"https://en.wikipedia.org/wiki/Animal"})
-// 	})
-// }
 
 func TestConnectToDB(t *testing.T) {
 	dbEndpoint := "http://localhost:17474"
