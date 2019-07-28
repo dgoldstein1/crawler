@@ -71,6 +71,36 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			ExpectedError:    nil,
 		},
 		Test{
+			Name: "adds all neighbor nodes sucesfully with full (non-trimmed) link",
+			Setup: func() {
+				// mock out DB call
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+					},
+				)
+				// mock out metadata call
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{
+							"errors": []string{"test"},
+							"entries": []TwoWayEntry{
+								TwoWayEntry{"/wiki/test", 1},
+								TwoWayEntry{"/wiki/test1", 2},
+								TwoWayEntry{"/wiki/test2", 3},
+								TwoWayEntry{"/wiki/test3", 4},
+							},
+						})
+					},
+				)
+
+			},
+			CurrNode:         "https://en.wikipedia.org/wiki/String_cheese",
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedError:    nil,
+		},
+		Test{
 			Name: "returns only neighbors added",
 			Setup: func() {
 				// mock out DB call
