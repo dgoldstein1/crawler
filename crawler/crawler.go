@@ -59,6 +59,7 @@ func Crawl(
 				if err != nil {
 					logWarn("Error visiting '%s', %v", url, err)
 				}
+				c.Wait()
 			}
 		}
 	})
