@@ -39,7 +39,119 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 		ExpectedResponse []string
 		ExpectedError    error
 	}
-	testTable := []Test{}
+	testTable := []Test{
+		Test{
+			Name: "adds all neighbor nodes sucesfully",
+			Setup: func() {
+				// mock out DB call
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+					},
+				)
+				// mock out metadata call
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{
+							"errors": []string{"test"},
+							"entries": []TwoWayEntry{
+								TwoWayEntry{"/wiki/test", 1},
+								TwoWayEntry{"/wiki/test1", 2},
+								TwoWayEntry{"/wiki/test2", 3},
+								TwoWayEntry{"/wiki/test3", 4},
+							},
+						})
+					},
+				)
+
+			},
+			CurrNode:         "/wiki/test",
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "wiki/test3"},
+			ExpectedError:    nil,
+		},
+		Test{
+			Name: "returns only neighbors added",
+			Setup: func() {
+				// mock out DB call
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{4}})
+					},
+				)
+				// mock out metadata call
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{
+							"errors": []string{"test"},
+							"entries": []TwoWayEntry{
+								TwoWayEntry{"/wiki/test", 1},
+								TwoWayEntry{"/wiki/test1", 2},
+								TwoWayEntry{"/wiki/test2", 3},
+								TwoWayEntry{"/wiki/test3", 4},
+							},
+						})
+					},
+				)
+
+			},
+			CurrNode:         "/wiki/test",
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{"wiki/test3"},
+			ExpectedError:    nil,
+		},
+		Test{
+			Name: "fails on bad ID lookup",
+			Setup: func() {
+				// mock out DB call
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+					},
+				)
+				// mock out metadata call
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "server error", "code": 500})
+					},
+				)
+			},
+			CurrNode:         "/wiki/test",
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{},
+			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
+		},
+
+		Test{
+			Name: "fails on bad GRAPH_DB_ENDPOINT request",
+			Setup: func() {
+				// mock out DB call
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "Not Found", "code": 500})
+					},
+				)
+				// mock out metadata call
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{
+							"errors": []string{"test"},
+							"entries": []TwoWayEntry{
+								TwoWayEntry{"/wiki/test", 1},
+								TwoWayEntry{"/wiki/test1", 2},
+								TwoWayEntry{"/wiki/test2", 3},
+								TwoWayEntry{"/wiki/test3", 4},
+							},
+						})
+					},
+				)
+			},
+			CurrNode:         "/wiki/test",
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{},
+			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
+		},
+	}
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
