@@ -33,6 +33,8 @@ func AddEdgesIfDoNotExist(
 	neighborsAdded []string,
 	err error,
 ) {
+	// trim current node if needed
+	currentNode = strings.TrimPrefix(currentNode, "https://en.wikipedia.org")
 	neighborsAdded = []string{}
 	// get IDs from page keys
 	twoWayResp, err := getArticleIds(append(neighborNodes, currentNode))

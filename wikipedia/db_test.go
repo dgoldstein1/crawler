@@ -95,7 +95,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				)
 
 			},
-			CurrNode:         "https://en.wikipedia.org/wiki/String_cheese",
+			CurrNode:         "https://en.wikipedia.org/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
 			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
 			ExpectedError:    nil,
