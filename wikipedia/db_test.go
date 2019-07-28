@@ -66,8 +66,8 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 
 			},
 			CurrNode:         "/wiki/test",
-			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "wiki/test3"},
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
 			ExpectedError:    nil,
 		},
 		Test{
@@ -97,7 +97,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{"wiki/test3"},
+			ExpectedResponse: []string{"/wiki/test3"},
 			ExpectedError:    nil,
 		},
 		Test{
@@ -112,7 +112,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out metadata call
 				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "server error", "code": 500})
+						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "Could not connect to TWO_WAY_KV_ENDPOINT", "code": 500})
 					},
 				)
 			},
@@ -128,7 +128,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out DB call
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "Not Found", "code": 500})
+						return httpmock.NewJsonResponse(500, map[string]interface{}{"error": "Could not connect to TWO_WAY_KV_ENDPOINT", "code": 500})
 					},
 				)
 				// mock out metadata call

@@ -26,8 +26,47 @@ func IsValidCrawlLink(link string) bool {
 }
 
 // adds edge to DB, returns new neighbors added (to crawl on)
-func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string, error) {
-	return []string{}, nil
+func AddEdgesIfDoNotExist(
+	currentNode string,
+	neighborNodes []string,
+) (
+	neighborsAdded []string,
+	err error,
+) {
+	neighborsAdded = []string{}
+	// get IDs from page keys
+	twoWayResp, err := getArticleIds(append(neighborNodes, currentNode))
+	if err != nil {
+		return neighborsAdded, err
+	}
+	// log out errors, if any
+	for _, e := range twoWayResp.Errors {
+		logErr("Error getting article ID: %s", e)
+	}
+	// map string => id (int)
+	currentNodeId := -1
+	neighborNodesIds := []int{}
+	for _, entry := range twoWayResp.Entries {
+		if entry.Key == currentNode {
+			currentNodeId = entry.Value
+		} else {
+			neighborNodesIds = append(neighborNodesIds, entry.Value)
+		}
+	}
+	// post IDs to graph db
+	graphResp, err := addNeighbors(currentNodeId, neighborNodesIds)
+	if err != nil {
+		return neighborsAdded, err
+	}
+	// map id => string
+	for _, entry := range twoWayResp.Entries {
+		for _, nAdded := range graphResp.NeighborsAdded {
+			if entry.Value == nAdded {
+				neighborsAdded = append(neighborsAdded, entry.Key)
+			}
+		}
+	}
+	return neighborsAdded, err
 }
 
 // posts possible new edges to GRAPH_DB_ENDPOINT
