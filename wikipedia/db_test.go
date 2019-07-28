@@ -151,6 +151,36 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			ExpectedResponse: []string{},
 			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
 		},
+		Test{
+			Name: "fails on reverse lookup",
+			Setup: func() {
+				// mock out DB call
+				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+					},
+				)
+				// mock out metadata call
+				httpmock.RegisterResponder("POST", twoWayEndpoint+"/entries",
+					func(req *http.Request) (*http.Response, error) {
+						return httpmock.NewJsonResponse(200, map[string]interface{}{
+							"errors": []string{"test"},
+							"entries": []TwoWayEntry{
+								// TwoWayEntry{"/wiki/test", 1}, >> mock db not returning correct node
+								TwoWayEntry{"/wiki/test1", 2},
+								TwoWayEntry{"/wiki/test2", 3},
+								TwoWayEntry{"/wiki/test3", 4},
+							},
+						})
+					},
+				)
+
+			},
+			CurrNode:         "/wiki/test",
+			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{},
+			ExpectedError:    errors.New("Could not find node on reverse lookup"),
+		},
 	}
 
 	for _, test := range testTable {
