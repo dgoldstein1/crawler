@@ -57,7 +57,7 @@ func AddEdgesIfDoNotExist(
 	}
 	// current cannot be -1
 	if currentNodeId == -1 {
-		logErr("Could not find reverse string => int lookup from resp: %v, currentNode: %s, neighbors : %v", twoWayResp.Entries, currentNode, neighborNodes)
+		logErr("Could not find reverse string => int lookup from \n resp: %v, \n currentNode: %s, \n neighbors : %v", twoWayResp.Entries, currentNode, neighborNodes)
 		return neighborsAdded, errors.New("Could not find node on reverse lookup")
 	}
 	// post IDs to graph db
