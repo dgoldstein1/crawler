@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -28,34 +26,70 @@ func IsValidCrawlLink(link string) bool {
 }
 
 // adds edge to DB, returns new neighbors added (to crawl on)
-func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string, error) {
-	// get wiki IDs
-	currentNodeId, err := getArticleId(strings.TrimPrefix(currentNode, baseEndpoint))
+func AddEdgesIfDoNotExist(
+	currentNode string,
+	neighborNodes []string,
+) (
+	neighborsAdded []string,
+	err error,
+) {
+	// trim current node if needed
+	currentNode = strings.TrimPrefix(currentNode, "https://en.wikipedia.org")
+	neighborsAdded = []string{}
+	// get IDs from page keys
+	twoWayResp, err := getArticleIds(append(neighborNodes, currentNode))
 	if err != nil {
-		return []string{}, err
+		logErr("Could not get neighbor Ids %v", err)
+		return neighborsAdded, err
 	}
-	// make a map of id[value]
-	neighborsMap := make(map[int]string)
-	neighborsIds := []int{}
-	for _, n := range neighborNodes {
-		neighborNodeId, err := getArticleId(n)
-		if err != nil {
-			logErr("Could not get id for '%s': %s", n, err.Error())
+	// log out errors, if any
+	for _, e := range twoWayResp.Errors {
+		logErr("Error getting article ID: %s", e)
+	}
+	// map string => id (int)
+	currentNodeId := -1
+	neighborNodesIds := []int{}
+	for _, entry := range twoWayResp.Entries {
+		if entry.Key == currentNode {
+			currentNodeId = entry.Value
 		} else {
-			neighborsMap[neighborNodeId] = n
-			neighborsIds = append(neighborsIds, neighborNodeId)
+			neighborNodesIds = append(neighborNodesIds, entry.Value)
 		}
 	}
+	// current cannot be -1
+	if currentNodeId == -1 {
+		logErr("Could not find reverse string => int lookup from \n resp: %v, \n currentNode: %s, \n neighbors : %v", twoWayResp.Entries, currentNode, neighborNodes)
+		return neighborsAdded, errors.New("Could not find node on reverse lookup")
+	}
+	// post IDs to graph db
+	graphResp, err := addNeighbors(currentNodeId, neighborNodesIds)
+	if err != nil {
+		logErr("Could not POST to graph DB")
+		return neighborsAdded, err
+	}
+	// map id => string
+	for _, entry := range twoWayResp.Entries {
+		for _, nAdded := range graphResp.NeighborsAdded {
+			if entry.Value == nAdded {
+				// add back in prefix
+				neighborsAdded = append(neighborsAdded, baseEndpoint+entry.Key)
+			}
+		}
+	}
+	return neighborsAdded, err
+}
 
+// posts possible new edges to GRAPH_DB_ENDPOINT
+func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err error) {
 	// POST new neighbors to db
 	jsonValue, _ := json.Marshal(map[string][]int{
-		"neighbors": neighborsIds,
+		"neighbors": neighborIds,
 	})
 	url := os.Getenv("GRAPH_DB_ENDPOINT") + "/edges"
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	req.Header.Set("Content-Type", "application/json")
 	q := req.URL.Query()
-	q.Add("node", strconv.Itoa(currentNodeId))
+	q.Add("node", strconv.Itoa(curr))
 	req.URL.RawQuery = q.Encode()
 
 	// return the result of the POST request
@@ -64,73 +98,75 @@ func AddEdgesIfDoNotExist(currentNode string, neighborNodes []string) ([]string,
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		return []string{}, err
+		return resp, err
 	}
 	// assert response is 200
 	if res.StatusCode != 200 {
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return []string{}, err
+			return resp, err
 		}
 		errResp := GraphResponseError{}
 		err = json.Unmarshal(body, &errResp)
 		if err != nil {
-			return []string{}, err
+			return resp, err
 		}
 		// fails with error
-		return []string{}, errors.New(errResp.Error)
+		return resp, errors.New(errResp.Error)
 	}
 
 	// 200 level response, continue as normal
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return []string{}, err
+		return resp, err
 	}
-	resp := GraphResponseSuccess{}
+	resp = GraphResponseSuccess{}
 	err = json.Unmarshal(body, &resp)
-	if err != nil {
-		return []string{}, err
-	}
-	newEdgesNodes := resp.NeighborsAdded
-	// compare new ids to
-	nodesAdded := []string{}
-	for _, n := range newEdgesNodes {
-		if neighborsMap[n] != "" {
-			nodesAdded = append(nodesAdded, baseEndpoint+neighborsMap[n])
-		}
-	}
-	return nodesAdded, nil
+	return resp, err
 }
 
 // gets wikipedia int id from article url
-func getArticleId(page string) (int, error) {
-	// Request the HTML page.
-	res, err := http.Get(baseEndpoint + page)
-	if err != nil {
-		return -1, err
+func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
+	// create array of entries
+	entries := []TwoWayEntry{}
+	for _, s := range articles {
+		entries = append(entries, TwoWayEntry{s, 0})
 	}
-	defer res.Body.Close()
+	b := new(bytes.Buffer)
+	json.NewEncoder(b).Encode(entries)
+	// post to endpoint
+	url := os.Getenv("TWO_WAY_KV_ENDPOINT") + "/entries"
+	req, _ := http.NewRequest("POST", url, b)
+	req.Header.Set("Content-Type", "application/json")
+	client := http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return resp, err
+	}
+	// read out response
 	if res.StatusCode != 200 {
-		return -1, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return resp, err
+		}
+		errResp := GraphResponseError{}
+		err = json.Unmarshal(body, &errResp)
+		if err != nil {
+			return resp, err
+		}
+		// fails with error
+		return resp, errors.New(errResp.Error)
 	}
-	// Load the HTML document
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	// succesful request
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return -1, err
+		return resp, err
 	}
-	// get first script tag
-	s := doc.Find("script").First().Text()
-	if s == "" {
-		return -1, fmt.Errorf("Could not parse id from <script> tag in '%s'", page)
-	}
-	// parse out "wgArticleId":25079,
-	id := strings.Split(s, `"wgArticleId":`)
-	if len(id) == 1 {
-		return -1, fmt.Errorf("Could not find 'wgArticleId' tag in '%s'", page)
-	}
-	// parse out 'id'
-	id = strings.Split(id[1], ",")
-	return strconv.Atoi(id[0])
+	resp = TwoWayResponse{}
+	err = json.Unmarshal(body, &resp)
+	return resp, err
 }
 
 // connects to given databse and initializes scraper

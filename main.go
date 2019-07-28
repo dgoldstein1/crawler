@@ -21,6 +21,7 @@ func parseEnv() {
 		"GRAPH_DB_ENDPOINT",
 		"STARTING_ENDPOINT",
 		"MAX_APPROX_NODES",
+		"TWO_WAY_KV_ENDPOINT",
 	}
 	for _, v := range requiredEnvs {
 		if os.Getenv(v) == "" {

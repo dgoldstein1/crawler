@@ -9,10 +9,12 @@ type GraphResponseSuccess struct {
 	NeighborsAdded []int `json:"neighborsAdded"`
 }
 
-type PropertiesResponse struct {
-	Parse PropertiesValues `json:"parse"`
+type TwoWayEntry struct {
+	Key   string `json:"key"`
+	Value int    `json:"value"`
 }
-type PropertiesValues struct {
-	Pageid int `json:"pageid"`
-	// ...drop title and properties keys
+
+type TwoWayResponse struct {
+	Errors  []string      `json:"errors"`
+	Entries []TwoWayEntry `json:"entries"`
 }
