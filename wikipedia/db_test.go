@@ -67,7 +67,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{baseEndpoint + "/wiki/test1", baseEndpoint + "/wiki/test2", baseEndpoint + "/wiki/test3"},
 			ExpectedError:    nil,
 		},
 		Test{
@@ -97,7 +97,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "https://en.wikipedia.org/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{"/wiki/test1", "/wiki/test2", "/wiki/test3"},
+			ExpectedResponse: []string{baseEndpoint + "/wiki/test1", baseEndpoint + "/wiki/test2", baseEndpoint + "/wiki/test3"},
 			ExpectedError:    nil,
 		},
 		Test{
@@ -127,7 +127,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{"/wiki/test3"},
+			ExpectedResponse: []string{baseEndpoint + "/wiki/test3"},
 			ExpectedError:    nil,
 		},
 		Test{

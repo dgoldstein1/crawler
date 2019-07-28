@@ -39,6 +39,7 @@ func AddEdgesIfDoNotExist(
 	// get IDs from page keys
 	twoWayResp, err := getArticleIds(append(neighborNodes, currentNode))
 	if err != nil {
+		logErr("Could not get neighbor Ids %v", err)
 		return neighborsAdded, err
 	}
 	// log out errors, if any
@@ -63,13 +64,15 @@ func AddEdgesIfDoNotExist(
 	// post IDs to graph db
 	graphResp, err := addNeighbors(currentNodeId, neighborNodesIds)
 	if err != nil {
+		logErr("Could not POST to graph DB")
 		return neighborsAdded, err
 	}
 	// map id => string
 	for _, entry := range twoWayResp.Entries {
 		for _, nAdded := range graphResp.NeighborsAdded {
 			if entry.Value == nAdded {
-				neighborsAdded = append(neighborsAdded, entry.Key)
+				// add back in prefix
+				neighborsAdded = append(neighborsAdded, baseEndpoint+entry.Key)
 			}
 		}
 	}
