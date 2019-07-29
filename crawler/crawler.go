@@ -51,7 +51,7 @@ func Crawl(
 		}
 		// check stopping condition
 		nodesVisited.incr(int32(len(nodesAdded)))
-		logMsg("succesfully added %d nodes, ~ %d total nodes", len(nodesAdded), nodesVisited.get())
+		logMsg("succesfully added %d nodes, about %d - %d total nodes", len(nodesAdded), nodesVisited.get(), nodesVisited.get() * 10)
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
@@ -59,7 +59,7 @@ func Crawl(
 				if err != nil {
 					logWarn("Error visiting '%s', %v", url, err)
 				}
-				c.Wait()
+				// c.Wait()
 			}
 		}
 	})
