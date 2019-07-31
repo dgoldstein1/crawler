@@ -4,6 +4,7 @@ import (
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"sync/atomic"
+	"time"
 )
 
 var logMsg = log.Infof
@@ -27,7 +28,11 @@ func Crawl(
 		colly.Async(true),
 		colly.CacheDir("/tmp/crawlercache"),
 	)
-	c.Limit(&colly.LimitRule{Parallelism: 10})
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 2,
+		Delay:       5 * time.Second,
+	})
 
 	nodesVisited := asyncInt(0)
 
@@ -47,10 +52,6 @@ func Crawl(
 		nodesAdded, err := addEdgesIfDoNotExist(e.Request.URL.String(), validURLs)
 		if err != nil {
 			logErr("error adding '%s': %s", e.Request.URL.String(), err.Error())
-			return
-		}
-		if len(nodesAdded) == 0 {
-			return
 		}
 		// check stopping condition
 		nodesVisited.incr(int32(len(nodesAdded)))
@@ -64,7 +65,7 @@ func Crawl(
 					logWarn("Error visiting '%s', %v", url, err)
 				}
 			}
-			// c.Wait()
+			c.Wait()
 		}
 	})
 
