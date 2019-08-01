@@ -1,6 +1,6 @@
 # crawler
 
-Script to crawl html and add href links to a [big-data graph DB](https://github.com/dgoldstein1/graphApi)
+Script to crawl html and add href links, crawling and indexing 5k sites / second into [big-data graph DB](https://github.com/dgoldstein1/graphApi).
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/0918dd40ac9fd5d3e454/maintainability)](https://codeclimate.com/github/dgoldstein1/crawler/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/0918dd40ac9fd5d3e454/test_coverage)](https://codeclimate.com/github/dgoldstein1/crawler/test_coverage)
@@ -21,6 +21,12 @@ docker build . -t dgoldstein1/wikipedia-path
 ```
 
 ## Run it
+
+```sh
+dc up -d
+```
+
+or with dependencies running locally
 
 ```sh
 # run crawl on wikipedia
