@@ -171,7 +171,7 @@ func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
 
 // connects to given databse and initializes scraper
 func ConnectToDB() error {
-	resp, err := http.Get(os.Getenv("GRAPH_DB_ENDPOINT") + "/metrics")
+	resp, err := http.Get(os.Getenv("GRAPH_DB_ENDPOINT"))
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+
+  kv:
+    image: dgoldstein1/twowaykv:latest
+    ports:
+      - 5001:5001
+
+  graph:
+    image: dgoldstein1/biggraph:latest
+    ports:
+      - 5000:5000
+      - 8001:8001

@@ -27,7 +27,10 @@ func Crawl(
 		colly.Async(true),
 		colly.CacheDir("/tmp/crawlercache"),
 	)
-	c.Limit(&colly.LimitRule{Parallelism: 10})
+	c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 2,
+	})
 
 	nodesVisited := asyncInt(0)
 
@@ -47,24 +50,23 @@ func Crawl(
 		nodesAdded, err := addEdgesIfDoNotExist(e.Request.URL.String(), validURLs)
 		if err != nil {
 			logErr("error adding '%s': %s", e.Request.URL.String(), err.Error())
-			return
-		}
-		if len(nodesAdded) == 0 {
-			return
 		}
 		// check stopping condition
 		nodesVisited.incr(int32(len(nodesAdded)))
-		logMsg("succesfully added %d nodes, about %d - %d total nodes", len(nodesAdded), nodesVisited.get(), nodesVisited.get()*10)
+		logMsg(
+			"succesfully added %d nodes, about %d nodes",
+			len(nodesAdded),
+			nodesVisited.get(),
+		)
 
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
-				err = c.Visit(url)
+				err = e.Request.Visit(url)
 				if err != nil {
 					logWarn("Error visiting '%s', %v", url, err)
 				}
 			}
-			// c.Wait()
 		}
 	})
 
