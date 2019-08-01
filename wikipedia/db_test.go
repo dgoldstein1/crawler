@@ -379,14 +379,14 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	t.Run("fails when db not found", func(t *testing.T) {
 		err := ConnectToDB()
-		assert.EqualError(t, err, "Get http://localhost:17474/metrics: dial tcp 127.0.0.1:17474: connect: connection refused")
+		assert.EqualError(t, err, "Get http://localhost:17474: dial tcp 127.0.0.1:17474: connect: connection refused")
 	})
 	t.Run("succeed when server exists", func(t *testing.T) {
 		// mock out http endpoint
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
 		// Exact URL match
-		httpmock.RegisterResponder("GET", dbEndpoint+"/metrics",
+		httpmock.RegisterResponder("GET", dbEndpoint,
 			httpmock.NewStringResponder(200, `TEST`))
 
 		err := ConnectToDB()
