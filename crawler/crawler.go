@@ -4,7 +4,6 @@ import (
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"sync/atomic"
-	"time"
 )
 
 var logMsg = log.Infof
@@ -31,7 +30,6 @@ func Crawl(
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
 		Parallelism: 2,
-		Delay:       1 * time.Second,
 	})
 
 	nodesVisited := asyncInt(0)
