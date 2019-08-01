@@ -1,7 +1,6 @@
 version: "3.7"
 services:
 
-
   c1:
     image: dgoldstein1/crawler
     depends_on:
@@ -10,9 +9,34 @@ services:
     environment:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/String_cheese
+      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/Tongil_Industries_Company
       - MAX_APPROX_NODES=1000
       - COMMAND=wikipedia
+
+  c2:
+    image: dgoldstein1/crawler
+    depends_on:
+      - kv
+      - graph
+    environment:
+      - GRAPH_DB_ENDPOINT=http://graph:5000
+      - TWO_WAY_KV_ENDPOINT=http://kv:5001
+      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/Alderon_Iron_Ore_Corp.
+      - MAX_APPROX_NODES=1000
+      - COMMAND=wikipedia
+
+  c3:
+    image: dgoldstein1/crawler
+    depends_on:
+      - kv
+      - graph
+    environment:
+      - GRAPH_DB_ENDPOINT=http://graph:5000
+      - TWO_WAY_KV_ENDPOINT=http://kv:5001
+      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/Tigran_Hamasyan
+      - MAX_APPROX_NODES=1000
+      - COMMAND=wikipedia
+
 
   kv:
     image: dgoldstein1/twowaykv:latest
