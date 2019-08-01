@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+
+  kv:
+    image: dgoldstein1/twowaykv:latest
+    ports:
+      - 5001:5001
+    environment:
+      - GRAPH_DB_STORE_DIR=/tmp # storage directory
+      - GRAPH_DB_STORE_PORT=5001 # port served on
+      - GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
