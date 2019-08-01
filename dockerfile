@@ -7,4 +7,5 @@ ENV PATH $GOBIN:/usr/local/go/bin:$PATH
 COPY build $GOBIN
 RUN crawler --version
 
-CMD ["crawler","$COMMAND"]
+ENV COMMAND "--help"
+CMD crawler $COMMAND

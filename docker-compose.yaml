@@ -1,6 +1,19 @@
 version: "3.7"
 services:
 
+
+  c1:
+    image: dgoldstein1/crawler
+    depends_on:
+      - kv
+      - graph
+    environment:
+      - GRAPH_DB_ENDPOINT=http://graph:5000
+      - TWO_WAY_KV_ENDPOINT=http://kv:5001
+      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/String_cheese
+      - MAX_APPROX_NODES=1000
+      - COMMAND=wikipedia
+
   kv:
     image: dgoldstein1/twowaykv:latest
     ports:
