@@ -9,3 +9,12 @@ services:
       - GRAPH_DB_STORE_DIR=/tmp # storage directory
       - GRAPH_DB_STORE_PORT=5001 # port served on
       - GRAPH_DOCS_DIR="./api/*" # location of docs (warning: this entire dir is served up to the browser)
+
+  graph:
+    image: dgoldstein1/graph:latest
+    ports:
+      - 5000:5000
+    environment:
+      - METRICS_PORT=3000 # Port where metrics are running on server
+      - GRAPH_SAVE_PATH=./ # Name of file to load in and save graph. Relative path from root directory.
+      - SHORTEST_PATH_TIMEOUT=1000 # Maximum time allowed in finding shortest path between two nodes.
