@@ -47,9 +47,10 @@ func Crawl(
 		nodesAdded, err := addEdgesIfDoNotExist(e.Request.URL.String(), validURLs)
 		if err != nil {
 			logErr("error adding '%s': %s", e.Request.URL.String(), err.Error())
+		} else {
+			// update metrics
+			UpdateMetrics(len(nodesAdded), e.Request.Depth)
 		}
-		// update metrics
-		UpdateMetrics(len(nodesAdded), e.Request.Depth)
 
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {

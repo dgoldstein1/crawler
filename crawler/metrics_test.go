@@ -17,7 +17,7 @@ func TestAsyncInt(t *testing.T) {
 	})
 }
 
-func TestServiceMetrics(t *testing.T) {
+func TestServeServiceMetrics(t *testing.T) {
 
 }
 
@@ -26,5 +26,9 @@ func TestUpdateMetrics(t *testing.T) {
 		n := nodesVisited.get()
 		UpdateMetrics(10, 1)
 		assert.Equal(t, n+10, nodesVisited.get())
+	})
+	t.Run("set maxDepth if it's greater than current", func(t *testing.T) {
+		UpdateMetrics(10, 100)
+		assert.Equal(t, int32(100), maxDepth.get())
 	})
 }
