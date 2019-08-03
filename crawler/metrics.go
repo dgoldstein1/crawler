@@ -54,11 +54,13 @@ func UpdateMetrics(numberOfNodesAdded int, currDepth int) {
 	nodesVisitedCounter.Inc()
 	// increment number of nodes
 	nodesVisited.incr(int32(numberOfNodesAdded))
+	logMsg("%f", float64(numberOfNodesAdded))
 	nodesVisitedCounter.Add(float64(numberOfNodesAdded))
 	// set max depth if greater
+
 	if int32(currDepth) > maxDepth.get() {
-		maxDepth.incr(int32(currDepth) - maxDepth.get())
-		maxDepthCounter.Add(float64(int32(currDepth) - maxDepth.get()))
+		maxDepth.incr(1)
+		maxDepthCounter.Inc()
 	}
 }
 
