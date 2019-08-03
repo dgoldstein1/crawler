@@ -1,9 +1,11 @@
 package crawler
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
+	"os"
 	"sync/atomic"
 )
 
@@ -42,7 +44,7 @@ func ServeMetrics() {
 	prometheus.MustRegister(maxDepthCounter)
 	// serve http
 	go func() {
-		logErr("%v", http.ListenAndServe(":8080", nil))
+		logErr("%v", http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("METRICS_PORT")), nil))
 	}()
 }
 

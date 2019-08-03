@@ -40,6 +40,7 @@ func TestParseEnv(t *testing.T) {
 		"STARTING_ENDPOINT",
 		"MAX_APPROX_NODES",
 		"TWO_WAY_KV_ENDPOINT",
+		"METRICS_PORT",
 	}
 
 	for _, v := range requiredEnvs {
