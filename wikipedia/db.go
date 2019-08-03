@@ -128,16 +128,15 @@ func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err e
 // gets wikipedia int id from article url
 func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	// create array of entries
-	entries := []TwoWayEntry{}
-	for _, s := range articles {
-		entries = append(entries, TwoWayEntry{s, 0})
-	}
 	b := new(bytes.Buffer)
-	json.NewEncoder(b).Encode(entries)
+	json.NewEncoder(b).Encode(articles)
 	// post to endpoint
 	url := os.Getenv("TWO_WAY_KV_ENDPOINT") + "/entries"
 	req, _ := http.NewRequest("POST", url, b)
 	req.Header.Set("Content-Type", "application/json")
+	q := req.URL.Query()
+	q.Add("muteAlreadyExistsError", "true")
+	req.URL.RawQuery = q.Encode()
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}

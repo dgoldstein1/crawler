@@ -354,7 +354,7 @@ func TestGetArticleIds(t *testing.T) {
 			Name:             "returns error on bad endpoint",
 			Articles:         []string{"/wiki/test", "/wiki/test1", "/wiki/test2"},
 			ExpectedResponse: TwoWayResponse{},
-			ExpectedError:    errors.New("Post http://localhost:17475/entries: no responder found"),
+			ExpectedError:    errors.New("Post http://localhost:17475/entries?muteAlreadyExistsError=true: no responder found"),
 			Setup:            func() {},
 		},
 	}
