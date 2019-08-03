@@ -55,7 +55,7 @@ func Crawl(
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
-				err = e.Request.Visit(url)
+				err = c.Visit(url)
 				if err != nil {
 					logWarn("Error visiting '%s', %v", url, err)
 				}
