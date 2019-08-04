@@ -53,7 +53,7 @@ func Crawl(
 		}
 
 		// recurse on new nodes if no stopping condition yet
-		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
+		if approximateMaxNodes == -1 || totalNodesAdded.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
 				err = e.Request.Visit(url)
 				if err != nil {

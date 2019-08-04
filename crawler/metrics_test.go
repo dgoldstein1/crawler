@@ -23,12 +23,12 @@ func TestServeServiceMetrics(t *testing.T) {
 
 func TestUpdateMetrics(t *testing.T) {
 	t.Run("increments nodesVisited", func(t *testing.T) {
-		n := nodesVisited.get()
+		n := totalNodesAdded.get()
 		UpdateMetrics(10, 1)
-		assert.Equal(t, n+10, nodesVisited.get())
+		assert.Equal(t, n+10, totalNodesAdded.get())
 	})
 	t.Run("set maxDepth if it's greater than current", func(t *testing.T) {
-		UpdateMetrics(10, 100)
-		assert.Equal(t, int32(100), maxDepth.get())
+		UpdateMetrics(10, 1)
+		assert.Equal(t, int32(1), maxDepth.get())
 	})
 }
