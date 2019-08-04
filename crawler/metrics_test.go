@@ -2,6 +2,11 @@ package crawler
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -18,7 +23,18 @@ func TestAsyncInt(t *testing.T) {
 }
 
 func TestServeServiceMetrics(t *testing.T) {
-
+	os.Setenv("METRICS_PORT", "8002")
+	ServeMetrics()
+	res, err := http.Get("http://localhost:8002/metrics")
+	require.NoError(t, err)
+	assert.Equal(t, 200, res.StatusCode)
+	body, err := ioutil.ReadAll(res.Body)
+	require.NoError(t, err)
+	bodyAsString := string(body)
+	// assert that has correct values
+	assert.True(t, strings.Contains(bodyAsString, "golang_nodes_added"))
+	assert.True(t, strings.Contains(bodyAsString, "golang_nodes_visited"))
+	assert.True(t, strings.Contains(bodyAsString, "golang_max_depth"))
 }
 
 func TestUpdateMetrics(t *testing.T) {
