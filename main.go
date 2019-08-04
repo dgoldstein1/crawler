@@ -22,6 +22,7 @@ func parseEnv() {
 		"STARTING_ENDPOINT",
 		"MAX_APPROX_NODES",
 		"TWO_WAY_KV_ENDPOINT",
+		"METRICS_PORT",
 	}
 	for _, v := range requiredEnvs {
 		if os.Getenv(v) == "" {
@@ -50,6 +51,7 @@ func runCrawler(
 	parseEnv()
 	// crawl with passed args
 	MAX_APPROX_NODES, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
+	crawler.ServeMetrics()
 	crawler.Crawl(
 		os.Getenv("STARTING_ENDPOINT"),
 		int32(MAX_APPROX_NODES),

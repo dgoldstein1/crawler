@@ -1,7 +1,6 @@
 package wikipedia
 
 import (
-	// "fmt"
 	"errors"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"

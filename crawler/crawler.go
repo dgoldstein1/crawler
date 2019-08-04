@@ -3,7 +3,6 @@ package crawler
 import (
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
-	"sync/atomic"
 )
 
 var logMsg = log.Infof
@@ -32,8 +31,6 @@ func Crawl(
 		Parallelism: 2,
 	})
 
-	nodesVisited := asyncInt(0)
-
 	// On every a element which has href attribute call callback
 	c.OnHTML("html", func(e *colly.HTMLElement) {
 		logMsg("parsing %s", e.Request.URL.String())
@@ -50,17 +47,13 @@ func Crawl(
 		nodesAdded, err := addEdgesIfDoNotExist(e.Request.URL.String(), validURLs)
 		if err != nil {
 			logErr("error adding '%s': %s", e.Request.URL.String(), err.Error())
+		} else {
+			// update metrics
+			UpdateMetrics(len(nodesAdded), e.Request.Depth)
 		}
-		// check stopping condition
-		nodesVisited.incr(int32(len(nodesAdded)))
-		logMsg(
-			"succesfully added %d nodes, about %d nodes",
-			len(nodesAdded),
-			nodesVisited.get(),
-		)
 
 		// recurse on new nodes if no stopping condition yet
-		if approximateMaxNodes == -1 || nodesVisited.get() < approximateMaxNodes {
+		if approximateMaxNodes == -1 || totalNodesAdded.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
 				err = e.Request.Visit(url)
 				if err != nil {
@@ -75,14 +68,4 @@ func Crawl(
 	c.Visit(endpoint)
 	// Wait until threads are finished
 	c.Wait()
-}
-
-// increments async int by "n"
-func (c *asyncInt) incr(n int32) int32 {
-	return atomic.AddInt32((*int32)(c), n)
-}
-
-// decrement astnc int
-func (c *asyncInt) get() int32 {
-	return atomic.LoadInt32((*int32)(c))
 }
