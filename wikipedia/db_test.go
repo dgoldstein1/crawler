@@ -2,11 +2,13 @@ package wikipedia
 
 import (
 	"errors"
+	"fmt"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 var dbEndpoint = "http://localhost:17474"
@@ -394,40 +396,72 @@ func TestConnectToDB(t *testing.T) {
 }
 
 func TestGetRandomArticle(t *testing.T) {
+	errorsLogged := []string{}
+	logErr = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			errorsLogged = append(errorsLogged, fmt.Sprintf(format, args))
+		} else {
+			errorsLogged = append(errorsLogged, format)
+		}
+	}
 
 	type Test struct {
-		Name              string
-		MockedRequest     string
-		MockedRequestCode int
-		ExpectedResponse  string
-		ExpectedError     string
+		Name             string
+		MockedRequest    string
+		ExpectedResponse string
+		ExpectedError    string
 	}
 
 	testTable := []Test{
 		Test{
-			Name:              "succesful",
-			MockedRequest:     `{"batchcomplete":"","continue":{"grncontinue":"0.369259750651|0.369260921533|12247122|0","continue":"grncontinue||"},"query":{"pages":{"9820486":{"pageid":9820486,"ns":0,"title":"Oregon Bicycle Racing Association","extract":"The Oregon Bicycle Racing Association is a bicycle racing organization based in the U.S. state of Oregon."}}},"limits":{"extracts":20}}`,
-			MockedRequestCode: 200,
-			ExpectedResponse:  "/wiki/Oregon Bicycle Racing Association",
-			ExpectedError:     "",
+			Name:             "succesful",
+			MockedRequest:    `{"batchcomplete":"","continue":{"grncontinue":"0.369259750651|0.369260921533|12247122|0","continue":"grncontinue||"},"query":{"pages":{"9820486":{"pageid":9820486,"ns":0,"title":"Oregon Bicycle Racing Association","extract":"The Oregon Bicycle Racing Association is a bicycle racing organization based in the U.S. state of Oregon."}}},"limits":{"extracts":20}}`,
+			ExpectedResponse: "/wiki/Oregon Bicycle Racing Association",
+			ExpectedError:    "",
+		},
+		Test{
+			Name:             "bad json",
+			MockedRequest:    `XXXXXXbatchcomplete":"","continue":{"grncontinue":"0.369259750651|0.369260921533|12247122|0","continue":"grncontinue||"},"query":{"pages":{"9820486":{"pageid":9820486,"ns":0,"title":"Oregon Bicycle Racing Association","extract":"The Oregon Bicycle Racing Association is a bicycle racing organization based in the U.S. state of Oregon."}}},"limits":{"extracts":20}}`,
+			ExpectedResponse: "",
+			ExpectedError:    "invalid character 'X' looking for beginning of value",
+		},
+		Test{
+			Name:             "ENDPOINT_NOT_FOUND",
+			MockedRequest:    "",
+			ExpectedResponse: "",
+			ExpectedError:    "Get http://BAD_ENDPOINT: dial tcp: lookup BAD_ENDPOINT: no such host",
 		},
 	}
 
+	tempEndpointVar := ""
 	for _, test := range testTable {
-		// mock out endpoint
-		httpmock.Activate()
-		httpmock.RegisterResponder("GET", metawikiEndpoint,
-			httpmock.NewStringResponder(test.MockedRequestCode, test.MockedRequest))
-		// run test
-		a, err := GetRandomArticle()
-		assert.Equal(t, test.ExpectedResponse, a)
-		if err != nil {
-			assert.Equal(t, test.ExpectedError, err.Error())
-		} else {
-			assert.Equal(t, "", test.ExpectedError)
-		}
-		// reset
-		httpmock.DeactivateAndReset()
+		t.Run(test.Name, func(t *testing.T) {
+			// mock out endpoint
+			if test.Name == "ENDPOINT_NOT_FOUND" {
+				tempEndpointVar = metawikiEndpoint
+				metawikiEndpoint = "http://BAD_ENDPOINT"
+				timeout = time.Duration(1 * time.Second)
+			} else {
+				httpmock.Activate()
+				httpmock.RegisterResponder("GET", metawikiEndpoint,
+					httpmock.NewStringResponder(200, test.MockedRequest))
+			}
+			// run test
+			a, err := GetRandomArticle()
+			assert.Equal(t, test.ExpectedResponse, a)
+			if err != nil {
+				assert.Equal(t, test.ExpectedError, err.Error())
+				assert.Equal(t, 1, len(errorsLogged))
+			} else {
+				assert.Equal(t, "", test.ExpectedError)
+				assert.Equal(t, 0, len(errorsLogged))
+			}
+			// reset
+			httpmock.DeactivateAndReset()
+			errorsLogged = []string{}
+			timeout = time.Duration(5 * time.Second)
+			metawikiEndpoint = tempEndpointVar
+		})
 	}
 
 }

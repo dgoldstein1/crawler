@@ -20,6 +20,7 @@ var logErr = log.Errorf
 var prefix = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
 var metawikiEndpoint = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&generator=random&grnnamespace=0&grnlimit=1ts="
+var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
 // determines if is good link to crawl on
@@ -96,7 +97,7 @@ func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err e
 
 	// return the result of the POST request
 	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: timeout,
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -140,7 +141,7 @@ func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	q.Add("muteAlreadyExistsError", "true")
 	req.URL.RawQuery = q.Encode()
 	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: timeout,
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -184,7 +185,11 @@ func ConnectToDB() error {
 // gets random article from metawiki API
 // returns article in the form "/wiki/XXXXX"
 func GetRandomArticle() (string, error) {
-	res, err := http.Get(metawikiEndpoint)
+	req, _ := http.NewRequest("GET", metawikiEndpoint, nil)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	res, err := client.Do(req)
 	if err != nil {
 		logErr("Could not get new article from metawiki server: %v", err)
 		return "", err
