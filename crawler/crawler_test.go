@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+func TestRun(t *testing.T) {
+	// TODO
+}
+
 func TestCrawl(t *testing.T) {
 	isValidCrawlLink := func(url string) bool {
 		return strings.HasPrefix(url, "/wiki/") && !strings.Contains(url, ":")

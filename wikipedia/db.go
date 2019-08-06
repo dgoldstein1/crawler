@@ -178,3 +178,31 @@ func ConnectToDB() error {
 	_, err = ioutil.ReadAll(resp.Body)
 	return err
 }
+
+func randomArticle(w http.ResponseWriter, r *http.Request) (string, error) {
+	url := "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&generator=random&grnnamespace=0&grnlimit=1ts="
+	// make request
+	res, err := http.Get(url)
+	if err != nil {
+		logErr("Could not get new article from metawiki server: %v", err)
+		return "", err
+	}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		logErr("Could not read response from metawiki server: %v", err)
+		return "", err
+	}
+	rArticle := &RArticleResp{}
+	err = json.Unmarshal(body, &rArticle)
+	if err != nil {
+		fmt.Println("whoops:", err)
+	}
+
+	text := ""
+	for _, v := range rArticle.Query.Pages {
+		text = fmt.Sprint(v.Extract)
+		break
+	}
+
+	fmt.Fprintf(w, text)
+}

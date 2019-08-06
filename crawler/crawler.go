@@ -9,6 +9,20 @@ var logMsg = log.Infof
 var logErr = log.Errorf
 var logWarn = log.Warnf
 
+// crawls until:
+// 		- approximateMaxNodes nodes is reached
+// 		- max retries for GetNewNode is reached
+func Run(
+	endpoint string,
+	approximateMaxNodes int32,
+	isValidCrawlLink IsValidCrawlLinkFunction,
+	connectToDB ConnectToDBFunction,
+	addEdgesIfDoNotExist AddEdgeFunction,
+	getNewNode GetNewNodeFunction,
+) {
+
+}
+
 // crawls a domain and saves relatives links to a db
 func Crawl(
 	endpoint string,
