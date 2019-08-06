@@ -26,5 +26,5 @@ type RQuery struct {
 	Pages map[string]Page `json:"pages"`
 }
 type Page struct {
-	Extract interface{} `json:"extract"`
+	Title string `json:"title"`
 }

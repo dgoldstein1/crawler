@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -16,8 +17,9 @@ import (
 
 // globals
 var logErr = log.Errorf
-var prefex = "/wiki/"
+var prefix = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
+var metawikiEndpoint = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&generator=random&grnnamespace=0&grnlimit=1ts="
 var c = colly.NewCollector()
 
 // determines if is good link to crawl on
@@ -179,10 +181,10 @@ func ConnectToDB() error {
 	return err
 }
 
-func randomArticle(w http.ResponseWriter, r *http.Request) (string, error) {
-	url := "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&generator=random&grnnamespace=0&grnlimit=1ts="
-	// make request
-	res, err := http.Get(url)
+// gets random article from metawiki API
+// returns article in the form "/wiki/XXXXX"
+func GetRandomArticle() (string, error) {
+	res, err := http.Get(metawikiEndpoint)
 	if err != nil {
 		logErr("Could not get new article from metawiki server: %v", err)
 		return "", err
@@ -195,14 +197,13 @@ func randomArticle(w http.ResponseWriter, r *http.Request) (string, error) {
 	rArticle := &RArticleResp{}
 	err = json.Unmarshal(body, &rArticle)
 	if err != nil {
-		fmt.Println("whoops:", err)
+		logErr("could not unmarshal response from metawiki server: %v \n body: %s", err, string(body))
+		return "", err
 	}
-
-	text := ""
-	for _, v := range rArticle.Query.Pages {
-		text = fmt.Sprint(v.Extract)
-		break
+	// etract response
+	for _, p := range rArticle.Query.Pages {
+		// return on first article
+		return prefix + p.Title, nil
 	}
-
-	fmt.Fprintf(w, text)
+	return "", fmt.Errorf("Could not find article in metawiki response:  %v+", rArticle)
 }

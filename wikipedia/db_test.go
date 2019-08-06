@@ -392,3 +392,42 @@ func TestConnectToDB(t *testing.T) {
 		assert.Nil(t, err)
 	})
 }
+
+func TestGetRandomArticle(t *testing.T) {
+
+	type Test struct {
+		Name              string
+		MockedRequest     string
+		MockedRequestCode int
+		ExpectedResponse  string
+		ExpectedError     string
+	}
+
+	testTable := []Test{
+		Test{
+			Name:              "succesful",
+			MockedRequest:     `{"batchcomplete":"","continue":{"grncontinue":"0.369259750651|0.369260921533|12247122|0","continue":"grncontinue||"},"query":{"pages":{"9820486":{"pageid":9820486,"ns":0,"title":"Oregon Bicycle Racing Association","extract":"The Oregon Bicycle Racing Association is a bicycle racing organization based in the U.S. state of Oregon."}}},"limits":{"extracts":20}}`,
+			MockedRequestCode: 200,
+			ExpectedResponse:  "/wiki/Oregon Bicycle Racing Association",
+			ExpectedError:     "",
+		},
+	}
+
+	for _, test := range testTable {
+		// mock out endpoint
+		httpmock.Activate()
+		httpmock.RegisterResponder("GET", metawikiEndpoint,
+			httpmock.NewStringResponder(test.MockedRequestCode, test.MockedRequest))
+		// run test
+		a, err := GetRandomArticle()
+		assert.Equal(t, test.ExpectedResponse, a)
+		if err != nil {
+			assert.Equal(t, test.ExpectedError, err.Error())
+		} else {
+			assert.Equal(t, "", test.ExpectedError)
+		}
+		// reset
+		httpmock.DeactivateAndReset()
+	}
+
+}
