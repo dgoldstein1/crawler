@@ -11,7 +11,7 @@ type ConnectToDBFunction func() error
 type IsValidCrawlLinkFunction func(string) bool
 
 // retrieves new node if current expires
-type GetNewNodeFunction func() (string, bool)
+type GetNewNodeFunction func() (string, error)
 
 // number of nodesVisited
 type asyncInt int32
