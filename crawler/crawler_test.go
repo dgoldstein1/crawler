@@ -25,7 +25,7 @@ func TestRun(t *testing.T) {
 	newNodeRetrieved := false
 	getNewNode := func() (string, error) {
 		newNodeRetrieved = true
-		return "/wiki/node1", nil
+		return "https://en.wikipedia.org/wiki/String_cheese", nil
 	}
 	// mock fatalf
 	originLogFatalf := logFatal
@@ -44,7 +44,6 @@ func TestRun(t *testing.T) {
 		StartingEndpoint string
 		ConnectToDB      func() error
 		MaxNodes         int32
-		MaxtRetries      int
 		MinNodesAdded    int
 		MaxNodesAdded    int
 		NewNodeRetrieved bool
@@ -56,7 +55,6 @@ func TestRun(t *testing.T) {
 			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
 			ConnectToDB:      func() error { return nil },
 			MaxNodes:         100,
-			MaxtRetries:      0,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
 			NewNodeRetrieved: false,
@@ -66,10 +64,18 @@ func TestRun(t *testing.T) {
 			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
 			ConnectToDB:      func() error { return errors.New("test error") },
 			MaxNodes:         1,
-			MaxtRetries:      0,
 			MinNodesAdded:    0,
 			MaxNodesAdded:    0,
 			NewNodeRetrieved: false,
+		},
+		Test{
+			Name:             "fetches new node if endpoint is undefined",
+			StartingEndpoint: "",
+			ConnectToDB:      func() error { return nil },
+			MaxNodes:         100,
+			MinNodesAdded:    1,
+			MaxNodesAdded:    1000,
+			NewNodeRetrieved: true,
 		},
 	}
 
