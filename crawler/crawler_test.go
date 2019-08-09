@@ -23,10 +23,6 @@ func TestRun(t *testing.T) {
 	isValidCrawlLink := func(url string) bool { return true }
 	// node2 := "/wiki/node2"
 	newNodeRetrieved := false
-	getNewNode := func() (string, error) {
-		newNodeRetrieved = true
-		return "https://en.wikipedia.org/wiki/String_cheese", nil
-	}
 	// mock fatalf
 	originLogFatalf := logFatal
 	defer func() { logFatal = originLogFatalf }()
@@ -45,6 +41,7 @@ func TestRun(t *testing.T) {
 		Name             string
 		StartingEndpoint string
 		ConnectToDB      func() error
+		GetNewNode       func() (string, error)
 		MaxNodes         int32
 		MinNodesAdded    int
 		MaxNodesAdded    int
@@ -56,6 +53,10 @@ func TestRun(t *testing.T) {
 			Name:             "starts with endpoint if one is passed",
 			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
 			ConnectToDB:      func() error { return nil },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/String_cheese", nil
+			},
 			MaxNodes:         100,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
@@ -65,6 +66,10 @@ func TestRun(t *testing.T) {
 			Name:             "cannot connect to DB",
 			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
 			ConnectToDB:      func() error { return errors.New("test error") },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/String_cheese", nil
+			},
 			MaxNodes:         1,
 			MinNodesAdded:    0,
 			MaxNodesAdded:    0,
@@ -74,6 +79,24 @@ func TestRun(t *testing.T) {
 			Name:             "fetches new node if endpoint is undefined",
 			StartingEndpoint: "",
 			ConnectToDB:      func() error { return nil },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/String_cheese", nil
+			},
+			MaxNodes:         100,
+			MinNodesAdded:    1,
+			MaxNodesAdded:    1000,
+			NewNodeRetrieved: true,
+		},
+		Test{
+
+			Name:             "fails when cannot fetch new node",
+			StartingEndpoint: "",
+			ConnectToDB:      func() error { return nil },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/String_cheese", errors.New("Could not retrieve new node")
+			},
 			MaxNodes:         100,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
@@ -90,10 +113,10 @@ func TestRun(t *testing.T) {
 				isValidCrawlLink,
 				test.ConnectToDB,
 				addEdge,
-				getNewNode,
+				test.GetNewNode,
 			)
 			// make assertions
-			if test.Name != "cannot connect to DB" {
+			if test.Name != "cannot connect to DB" && test.Name != "fails when cannot fetch new node" {
 				assert.True(t, test.MinNodesAdded <= len(nodesAdded))
 				assert.True(t, test.MaxNodesAdded >= len(nodesAdded))
 				assert.Equal(t, test.NewNodeRetrieved, newNodeRetrieved)
