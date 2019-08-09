@@ -217,4 +217,30 @@ func TestCrawl(t *testing.T) {
 		assert.Equal(t, len(nodesAdded) <= 30000, true)
 		assert.Equal(t, []string{}, errors)
 	})
+
+	t.Run("adds second level nodes as well", func(t *testing.T) {
+		nodesAdded = []string{}
+		logs = []string{}
+		errors = []string{}
+		Crawl(
+			endpoint,
+			1000,
+			isValidCrawlLink,
+			func(currNode string, neighborNodes []string) ([]string, error) {
+				temp := []string{}
+				for _, v := range neighborNodes {
+					temp = append(temp, "https://en.wikipedia.org"+v)
+				}
+				nodesAdded = append(nodesAdded, temp...)
+				return temp, nil
+			},
+		)
+
+		assert.Equal(t, "starting at ["+endpoint+"]", logs[0])
+		// only add first recursion nodes, ~30,000 on second recursion
+		assert.Equal(t, len(nodesAdded) >= 50, true)
+		assert.Equal(t, len(nodesAdded) <= 30000, true)
+		assert.Equal(t, []string{}, errors)
+
+	})
 }
