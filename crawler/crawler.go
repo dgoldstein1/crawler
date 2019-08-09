@@ -11,6 +11,7 @@ import (
 var logMsg = log.Infof
 var logErr = log.Errorf
 var logWarn = log.Warnf
+var logFatal = log.Fatalf
 
 // crawls until:
 // 		- approximateMaxNodes nodes is reached
@@ -25,13 +26,13 @@ func Run(
 ) {
 	// first connect to db
 	if err := connectToDB(); err != nil {
-		log.Fatalf("Could not connect do db: %v", err)
+		logFatal("Could not connect do db: %v", err)
 	}
 	// get starting link if there isn't one already
 	if endpoint == "" {
 		e, err := getNewNode()
 		if err != nil {
-			log.Fatalf("Could not find new starting node: %v", err)
+			logFatal("Could not find new starting node: %v", err)
 		} else {
 			endpoint = e
 		}

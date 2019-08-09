@@ -1,9 +1,10 @@
 package crawler
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	// "strings"
+	"errors"
 	"testing"
 )
 
@@ -18,8 +19,6 @@ func TestRun(t *testing.T) {
 		nodesAdded = append(nodesAdded, temp...)
 		return temp, nil
 	}
-	// establishes initial connection to DB
-	connectToDB := func() error { return nil }
 	// check if valid url string for crawling
 	isValidCrawlLink := func(url string) bool { return true }
 	// node2 := "/wiki/node2"
@@ -28,10 +27,22 @@ func TestRun(t *testing.T) {
 		newNodeRetrieved = true
 		return "/wiki/node1", nil
 	}
+	// mock fatalf
+	originLogFatalf := logFatal
+	defer func() { logFatal = originLogFatalf }()
+	logs := []string{}
+	logFatal = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			logs = append(logs, fmt.Sprintf(format, args))
+		} else {
+			logs = append(logs, format)
+		}
+	}
 
 	type Test struct {
 		Name             string
 		StartingEndpoint string
+		ConnectToDB      func() error
 		MaxNodes         int32
 		MaxtRetries      int
 		MinNodesAdded    int
@@ -43,10 +54,21 @@ func TestRun(t *testing.T) {
 		Test{
 			Name:             "starts with endpoint if one is passed",
 			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
+			ConnectToDB:      func() error { return nil },
 			MaxNodes:         100,
 			MaxtRetries:      0,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
+			NewNodeRetrieved: false,
+		},
+		Test{
+			Name:             "cannot connect to DB",
+			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
+			ConnectToDB:      func() error { return errors.New("test error") },
+			MaxNodes:         1,
+			MaxtRetries:      0,
+			MinNodesAdded:    0,
+			MaxNodesAdded:    0,
 			NewNodeRetrieved: false,
 		},
 	}
@@ -57,18 +79,24 @@ func TestRun(t *testing.T) {
 			// reset everything
 			newNodeRetrieved = false
 			nodesAdded = []string{}
+			logs = []string{}
 			Run(
 				test.StartingEndpoint,
 				test.MaxNodes,
 				isValidCrawlLink,
-				connectToDB,
+				test.ConnectToDB,
 				addEdge,
 				getNewNode,
 			)
 			// make assertions
-			assert.True(t, test.MinNodesAdded < len(nodesAdded))
-			assert.True(t, test.MaxNodesAdded > len(nodesAdded))
-			assert.Equal(t, test.NewNodeRetrieved, newNodeRetrieved)
+			if test.Name != "cannot connect to DB" {
+				assert.True(t, test.MinNodesAdded <= len(nodesAdded))
+				assert.True(t, test.MaxNodesAdded >= len(nodesAdded))
+				assert.Equal(t, test.NewNodeRetrieved, newNodeRetrieved)
+				assert.Equal(t, 0, len(logs))
+			} else {
+				assert.Equal(t, 1, len(logs))
+			}
 		})
 	}
 }
@@ -86,16 +114,6 @@ func TestRun(t *testing.T) {
 // 	endpoint := "https://en.wikipedia.org/wiki/String_cheese"
 //
 // 	// mock out log.Fatalf
-// 	originLogPrintf := logMsg
-// 	defer func() { logMsg = originLogPrintf }()
-// 	logs := []string{}
-// 	logMsg = func(format string, args ...interface{}) {
-// 		if len(args) > 0 {
-// 			logs = append(logs, fmt.Sprintf(format, args))
-// 		} else {
-// 			logs = append(logs, format)
-// 		}
-// 	}
 //
 // 	// mute warnings
 // 	originLogWarn := logWarn
