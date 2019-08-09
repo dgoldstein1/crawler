@@ -46,18 +46,20 @@ func runCrawler(
 	isValidCrawlLink crawler.IsValidCrawlLinkFunction,
 	connectToDB crawler.ConnectToDBFunction,
 	addEdgeIfDoesNotExist crawler.AddEdgeFunction,
+	getNewNode crawler.GetNewNodeFunction,
 ) {
 	// assert environment
 	parseEnv()
 	// crawl with passed args
 	MAX_APPROX_NODES, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	crawler.ServeMetrics()
-	crawler.Crawl(
+	crawler.Run(
 		os.Getenv("STARTING_ENDPOINT"),
 		int32(MAX_APPROX_NODES),
 		isValidCrawlLink,
 		connectToDB,
 		addEdgeIfDoesNotExist,
+		getNewNode,
 	)
 }
 
@@ -77,6 +79,7 @@ func main() {
 					wiki.IsValidCrawlLink,
 					wiki.ConnectToDB,
 					wiki.AddEdgesIfDoNotExist,
+					wiki.GetRandomArticle,
 				)
 				return nil
 			},

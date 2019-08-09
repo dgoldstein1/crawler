@@ -1,8 +1,11 @@
 package crawler
 
 import (
+	// "fmt"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	// "os"
+	// "strconv"
 )
 
 var logMsg = log.Infof
@@ -20,7 +23,25 @@ func Run(
 	addEdgesIfDoNotExist AddEdgeFunction,
 	getNewNode GetNewNodeFunction,
 ) {
-
+	// first connect to db
+	if err := connectToDB(); err != nil {
+		log.Fatalf("Could not connect do db: %v", err)
+	}
+	// get starting link if there isn't one already
+	if endpoint == "" {
+		e, err := getNewNode()
+		if err != nil {
+			log.Fatalf("Could not find new starting node: %v", err)
+		} else {
+			endpoint = e
+		}
+	}
+	Crawl(
+		endpoint,
+		approximateMaxNodes,
+		isValidCrawlLink,
+		addEdgesIfDoNotExist,
+	)
 }
 
 // crawls a domain and saves relatives links to a db
@@ -28,13 +49,8 @@ func Crawl(
 	endpoint string,
 	approximateMaxNodes int32,
 	isValidCrawlLink IsValidCrawlLinkFunction,
-	connectToDB ConnectToDBFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
 ) {
-	err := connectToDB()
-	if err != nil {
-		log.Fatal(err)
-	}
 	// Instantiate default collector
 	c := colly.NewCollector(
 		colly.Async(true),
@@ -65,7 +81,6 @@ func Crawl(
 			// update metrics
 			UpdateMetrics(len(nodesAdded), e.Request.Depth)
 		}
-
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || totalNodesAdded.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
@@ -76,7 +91,6 @@ func Crawl(
 			}
 		}
 	})
-
 	// Start scraping on endpoint
 	logMsg("starting at %s", endpoint)
 	c.Visit(endpoint)
