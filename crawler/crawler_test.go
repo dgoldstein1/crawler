@@ -39,6 +39,8 @@ func TestRun(t *testing.T) {
 		}
 	}
 
+	logMsg = func(format string, args ...interface{}) {}
+
 	type Test struct {
 		Name             string
 		StartingEndpoint string
