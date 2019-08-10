@@ -1,4 +1,4 @@
-package wikipedia
+package db
 
 import (
 	"bytes"

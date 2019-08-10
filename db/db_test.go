@@ -1,4 +1,4 @@
-package wikipedia
+package db
 
 import (
 	"errors"
@@ -13,7 +13,6 @@ import (
 
 var dbEndpoint = "http://localhost:17474"
 var twoWayEndpoint = "http://localhost:17475"
-
 
 func TestAddNeighbors(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
