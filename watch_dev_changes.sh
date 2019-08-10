@@ -5,5 +5,5 @@ inotifywait -e modify,create,delete -r ./ && \
 	clear
 	go fmt ./... \
 		&& go build -o build/crawler \
-		&& go test ./... -v
+		&& go test ./...
 done

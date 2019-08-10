@@ -4,19 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
+var logErr = log.Errorf
+var timeout = time.Duration(5 * time.Second)
+
 // posts possible new edges to GRAPH_DB_ENDPOINT
-func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err error) {
+func AddNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err error) {
 	// POST new neighbors to db
 	jsonValue, _ := json.Marshal(map[string][]int{
 		"neighbors": neighborIds,
@@ -62,7 +62,7 @@ func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err e
 }
 
 // gets wikipedia int id from article url
-func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
+func GetArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	// create array of entries
 	b := new(bytes.Buffer)
 	json.NewEncoder(b).Encode(articles)

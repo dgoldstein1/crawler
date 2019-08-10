@@ -2,13 +2,11 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
 	"testing"
-	"time"
 )
 
 var dbEndpoint = "http://localhost:17474"
@@ -71,7 +69,7 @@ func TestAddNeighbors(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Setup()
-			resp, err := addNeighbors(test.CurrNode, test.NeighborIds)
+			resp, err := AddNeighbors(test.CurrNode, test.NeighborIds)
 			if err != nil && test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError.Error(), err.Error())
 			} else {
@@ -148,7 +146,7 @@ func TestGetArticleIds(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Setup()
-			resp, err := getArticleIds(test.Articles)
+			resp, err := GetArticleIds(test.Articles)
 			if err != nil && test.ExpectedError != nil {
 				assert.Equal(t, test.ExpectedError.Error(), err.Error())
 			} else {

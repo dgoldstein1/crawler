@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/dgoldstein1/crawler/crawler"
+	db "github.com/dgoldstein1/crawler/db"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -44,7 +45,6 @@ func parseEnv() {
 // runs crawler with given functions
 func runCrawler(
 	isValidCrawlLink crawler.IsValidCrawlLinkFunction,
-	connectToDB crawler.ConnectToDBFunction,
 	addEdgeIfDoesNotExist crawler.AddEdgeFunction,
 	getNewNode crawler.GetNewNodeFunction,
 ) {
@@ -57,7 +57,7 @@ func runCrawler(
 		os.Getenv("STARTING_ENDPOINT"),
 		int32(MAX_APPROX_NODES),
 		isValidCrawlLink,
-		connectToDB,
+		db.ConnectToDB,
 		addEdgeIfDoesNotExist,
 		getNewNode,
 	)
@@ -77,7 +77,6 @@ func main() {
 			Action: func(c *cli.Context) error {
 				runCrawler(
 					wiki.IsValidCrawlLink,
-					wiki.ConnectToDB,
 					wiki.AddEdgesIfDoNotExist,
 					wiki.GetRandomArticle,
 				)

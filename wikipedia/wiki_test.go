@@ -1,5 +1,20 @@
 package wikipedia
 
+import (
+	"errors"
+	"fmt"
+	db "github.com/dgoldstein1/crawler/db"
+	"github.com/jarcoal/httpmock"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"os"
+	"testing"
+	"time"
+)
+
+var dbEndpoint = "http://localhost:17474"
+var twoWayEndpoint = "http://localhost:17475"
+
 func TestIsValidCrawlLink(t *testing.T) {
 	t.Run("does not crawl on links with ':'", func(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("/wiki/Category:Spinash"), false)
@@ -12,7 +27,6 @@ func TestIsValidCrawlLink(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("/wiki/binary"), true)
 	})
 }
-
 
 func TestGetRandomArticle(t *testing.T) {
 	errorsLogged := []string{}
@@ -85,7 +99,6 @@ func TestGetRandomArticle(t *testing.T) {
 
 }
 
-
 func TestAddEdgesIfDoNotExist(t *testing.T) {
 	os.Setenv("TWO_WAY_KV_ENDPOINT", twoWayEndpoint)
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
@@ -114,11 +127,11 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 					func(req *http.Request) (*http.Response, error) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
-							"entries": []TwoWayEntry{
-								TwoWayEntry{"/wiki/test", 1},
-								TwoWayEntry{"/wiki/test1", 2},
-								TwoWayEntry{"/wiki/test2", 3},
-								TwoWayEntry{"/wiki/test3", 4},
+							"entries": []db.TwoWayEntry{
+								db.TwoWayEntry{"/wiki/test", 1},
+								db.TwoWayEntry{"/wiki/test1", 2},
+								db.TwoWayEntry{"/wiki/test2", 3},
+								db.TwoWayEntry{"/wiki/test3", 4},
 							},
 						})
 					},
@@ -144,11 +157,11 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 					func(req *http.Request) (*http.Response, error) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
-							"entries": []TwoWayEntry{
-								TwoWayEntry{"/wiki/test", 1},
-								TwoWayEntry{"/wiki/test1", 2},
-								TwoWayEntry{"/wiki/test2", 3},
-								TwoWayEntry{"/wiki/test3", 4},
+							"entries": []db.TwoWayEntry{
+								db.TwoWayEntry{"/wiki/test", 1},
+								db.TwoWayEntry{"/wiki/test1", 2},
+								db.TwoWayEntry{"/wiki/test2", 3},
+								db.TwoWayEntry{"/wiki/test3", 4},
 							},
 						})
 					},
@@ -174,11 +187,11 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 					func(req *http.Request) (*http.Response, error) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
-							"entries": []TwoWayEntry{
-								TwoWayEntry{"/wiki/test", 1},
-								TwoWayEntry{"/wiki/test1", 2},
-								TwoWayEntry{"/wiki/test2", 3},
-								TwoWayEntry{"/wiki/test3", 4},
+							"entries": []db.TwoWayEntry{
+								db.TwoWayEntry{"/wiki/test", 1},
+								db.TwoWayEntry{"/wiki/test1", 2},
+								db.TwoWayEntry{"/wiki/test2", 3},
+								db.TwoWayEntry{"/wiki/test3", 4},
 							},
 						})
 					},
@@ -226,11 +239,11 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 					func(req *http.Request) (*http.Response, error) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
-							"entries": []TwoWayEntry{
-								TwoWayEntry{"/wiki/test", 1},
-								TwoWayEntry{"/wiki/test1", 2},
-								TwoWayEntry{"/wiki/test2", 3},
-								TwoWayEntry{"/wiki/test3", 4},
+							"entries": []db.TwoWayEntry{
+								db.TwoWayEntry{"/wiki/test", 1},
+								db.TwoWayEntry{"/wiki/test1", 2},
+								db.TwoWayEntry{"/wiki/test2", 3},
+								db.TwoWayEntry{"/wiki/test3", 4},
 							},
 						})
 					},
@@ -255,11 +268,11 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 					func(req *http.Request) (*http.Response, error) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
-							"entries": []TwoWayEntry{
-								// TwoWayEntry{"/wiki/test", 1}, >> mock db not returning correct node
-								TwoWayEntry{"/wiki/test1", 2},
-								TwoWayEntry{"/wiki/test2", 3},
-								TwoWayEntry{"/wiki/test3", 4},
+							"entries": []db.TwoWayEntry{
+								// db.TwoWayEntry{"/wiki/test", 1}, >> mock db not returning correct node
+								db.TwoWayEntry{"/wiki/test1", 2},
+								db.TwoWayEntry{"/wiki/test2", 3},
+								db.TwoWayEntry{"/wiki/test3", 4},
 							},
 						})
 					},

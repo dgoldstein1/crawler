@@ -1,5 +1,17 @@
-package wikipeda
+package wikipedia
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/dgoldstein1/crawler/db"
+	"github.com/gocolly/colly"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
+)
 
 // globals
 var logErr = log.Errorf
@@ -57,7 +69,7 @@ func AddEdgesIfDoNotExist(
 	currentNode = strings.TrimPrefix(currentNode, "https://en.wikipedia.org")
 	neighborsAdded = []string{}
 	// get IDs from page keys
-	twoWayResp, err := getArticleIds(append(neighborNodes, currentNode))
+	twoWayResp, err := db.GetArticleIds(append(neighborNodes, currentNode))
 	if err != nil {
 		logErr("Could not get neighbor Ids %v", err)
 		return neighborsAdded, err
@@ -82,7 +94,7 @@ func AddEdgesIfDoNotExist(
 		return neighborsAdded, errors.New("Could not find node on reverse lookup")
 	}
 	// post IDs to graph db
-	graphResp, err := addNeighbors(currentNodeId, neighborNodesIds)
+	graphResp, err := db.AddNeighbors(currentNodeId, neighborNodesIds)
 	if err != nil {
 		logErr("Could not POST to graph DB")
 		return neighborsAdded, err
