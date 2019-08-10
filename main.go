@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/dgoldstein1/crawler/crawler"
+	db "github.com/dgoldstein1/crawler/db"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -19,7 +20,6 @@ func parseEnv() {
 	})
 	requiredEnvs := []string{
 		"GRAPH_DB_ENDPOINT",
-		"STARTING_ENDPOINT",
 		"MAX_APPROX_NODES",
 		"TWO_WAY_KV_ENDPOINT",
 		"METRICS_PORT",
@@ -44,20 +44,21 @@ func parseEnv() {
 // runs crawler with given functions
 func runCrawler(
 	isValidCrawlLink crawler.IsValidCrawlLinkFunction,
-	connectToDB crawler.ConnectToDBFunction,
 	addEdgeIfDoesNotExist crawler.AddEdgeFunction,
+	getNewNode crawler.GetNewNodeFunction,
 ) {
 	// assert environment
 	parseEnv()
 	// crawl with passed args
 	MAX_APPROX_NODES, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	crawler.ServeMetrics()
-	crawler.Crawl(
+	crawler.Run(
 		os.Getenv("STARTING_ENDPOINT"),
 		int32(MAX_APPROX_NODES),
 		isValidCrawlLink,
-		connectToDB,
+		db.ConnectToDB,
 		addEdgeIfDoesNotExist,
+		getNewNode,
 	)
 }
 
@@ -75,8 +76,8 @@ func main() {
 			Action: func(c *cli.Context) error {
 				runCrawler(
 					wiki.IsValidCrawlLink,
-					wiki.ConnectToDB,
 					wiki.AddEdgesIfDoNotExist,
+					wiki.GetRandomArticle,
 				)
 				return nil
 			},

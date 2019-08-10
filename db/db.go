@@ -1,86 +1,22 @@
-package wikipedia
+package db
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
-// globals
 var logErr = log.Errorf
-var prefex = "/wiki/"
-var baseEndpoint = "https://en.wikipedia.org"
-var c = colly.NewCollector()
-
-// determines if is good link to crawl on
-func IsValidCrawlLink(link string) bool {
-	return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") && !strings.Contains(link, "#")
-}
-
-// adds edge to DB, returns new neighbors added (to crawl on)
-func AddEdgesIfDoNotExist(
-	currentNode string,
-	neighborNodes []string,
-) (
-	neighborsAdded []string,
-	err error,
-) {
-	// trim current node if needed
-	currentNode = strings.TrimPrefix(currentNode, "https://en.wikipedia.org")
-	neighborsAdded = []string{}
-	// get IDs from page keys
-	twoWayResp, err := getArticleIds(append(neighborNodes, currentNode))
-	if err != nil {
-		logErr("Could not get neighbor Ids %v", err)
-		return neighborsAdded, err
-	}
-	// log out errors, if any
-	for _, e := range twoWayResp.Errors {
-		logErr("Error getting article ID: %s", e)
-	}
-	// map string => id (int)
-	currentNodeId := -1
-	neighborNodesIds := []int{}
-	for _, entry := range twoWayResp.Entries {
-		if entry.Key == currentNode {
-			currentNodeId = entry.Value
-		} else {
-			neighborNodesIds = append(neighborNodesIds, entry.Value)
-		}
-	}
-	// current cannot be -1
-	if currentNodeId == -1 {
-		logErr("Could not find reverse string => int lookup from \n resp: %v, \n currentNode: %s, \n neighbors : %v", twoWayResp.Entries, currentNode, neighborNodes)
-		return neighborsAdded, errors.New("Could not find node on reverse lookup")
-	}
-	// post IDs to graph db
-	graphResp, err := addNeighbors(currentNodeId, neighborNodesIds)
-	if err != nil {
-		logErr("Could not POST to graph DB")
-		return neighborsAdded, err
-	}
-	// map id => string
-	for _, entry := range twoWayResp.Entries {
-		for _, nAdded := range graphResp.NeighborsAdded {
-			if entry.Value == nAdded {
-				// add back in prefix
-				neighborsAdded = append(neighborsAdded, baseEndpoint+entry.Key)
-			}
-		}
-	}
-	return neighborsAdded, err
-}
+var timeout = time.Duration(5 * time.Second)
 
 // posts possible new edges to GRAPH_DB_ENDPOINT
-func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err error) {
+func AddNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err error) {
 	// POST new neighbors to db
 	jsonValue, _ := json.Marshal(map[string][]int{
 		"neighbors": neighborIds,
@@ -94,7 +30,7 @@ func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err e
 
 	// return the result of the POST request
 	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: timeout,
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -126,7 +62,7 @@ func addNeighbors(curr int, neighborIds []int) (resp GraphResponseSuccess, err e
 }
 
 // gets wikipedia int id from article url
-func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
+func GetArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	// create array of entries
 	b := new(bytes.Buffer)
 	json.NewEncoder(b).Encode(articles)
@@ -138,7 +74,7 @@ func getArticleIds(articles []string) (resp TwoWayResponse, err error) {
 	q.Add("muteAlreadyExistsError", "true")
 	req.URL.RawQuery = q.Encode()
 	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: timeout,
 	}
 	res, err := client.Do(req)
 	if err != nil {
