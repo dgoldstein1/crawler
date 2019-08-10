@@ -9,8 +9,8 @@ services:
     environment:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/Tongil_Industries_Company
       - MAX_APPROX_NODES=10
+      - METRICS_PORT=8001
       - COMMAND=wikipedia
 
   c2:
@@ -21,8 +21,8 @@ services:
     environment:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/Alderon_Iron_Ore_Corp.
       - MAX_APPROX_NODES=10
+      - METRICS_PORT=8001
       - COMMAND=wikipedia
 
   c3:
@@ -33,8 +33,8 @@ services:
     environment:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - STARTING_ENDPOINT=https://en.wikipedia.org/wiki/Tigran_Hamasyan
       - MAX_APPROX_NODES=10
+      - METRICS_PORT=8001
       - COMMAND=wikipedia
 
 

@@ -52,7 +52,7 @@ func GetRandomArticle() (string, error) {
 	// etract response
 	for _, p := range rArticle.Query.Pages {
 		// return on first article
-		return prefix + p.Title, nil
+		return baseEndpoint + prefix + p.Title, nil
 	}
 	return "", fmt.Errorf("Could not find article in metawiki response:  %v+", rArticle)
 }

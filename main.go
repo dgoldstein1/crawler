@@ -20,7 +20,6 @@ func parseEnv() {
 	})
 	requiredEnvs := []string{
 		"GRAPH_DB_ENDPOINT",
-		"STARTING_ENDPOINT",
 		"MAX_APPROX_NODES",
 		"TWO_WAY_KV_ENDPOINT",
 		"METRICS_PORT",

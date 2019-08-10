@@ -1,11 +1,8 @@
 package crawler
 
 import (
-	// "fmt"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
-	// "os"
-	// "strconv"
 )
 
 var logMsg = log.Infof
@@ -13,9 +10,7 @@ var logErr = log.Errorf
 var logWarn = log.Warnf
 var logFatal = log.Fatalf
 
-// crawls until:
-// 		- approximateMaxNodes nodes is reached
-// 		- max retries for GetNewNode is reached
+// crawls until approximateMaxNodes nodes is reached
 func Run(
 	endpoint string,
 	approximateMaxNodes int32,

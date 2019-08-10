@@ -49,7 +49,7 @@ func TestGetRandomArticle(t *testing.T) {
 		Test{
 			Name:             "succesful",
 			MockedRequest:    `{"batchcomplete":"","continue":{"grncontinue":"0.369259750651|0.369260921533|12247122|0","continue":"grncontinue||"},"query":{"pages":{"9820486":{"pageid":9820486,"ns":0,"title":"Oregon Bicycle Racing Association","extract":"The Oregon Bicycle Racing Association is a bicycle racing organization based in the U.S. state of Oregon."}}},"limits":{"extracts":20}}`,
-			ExpectedResponse: "/wiki/Oregon Bicycle Racing Association",
+			ExpectedResponse: "https://en.wikipedia.org/wiki/Oregon Bicycle Racing Association",
 			ExpectedError:    "",
 		},
 		Test{
