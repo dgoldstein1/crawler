@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -62,7 +63,7 @@ func TestGetRandomArticle(t *testing.T) {
 			Name:             "ENDPOINT_NOT_FOUND",
 			MockedRequest:    "",
 			ExpectedResponse: "",
-			ExpectedError:    "Get http://BAD_ENDPOINT: dial tcp: lookup BAD_ENDPOINT: no such host",
+			ExpectedError:    "Get http://BAD_ENDPOINT: dial tcp: lookup BAD_ENDPOINT",
 		},
 	}
 
@@ -83,7 +84,7 @@ func TestGetRandomArticle(t *testing.T) {
 			a, err := GetRandomArticle()
 			assert.Equal(t, test.ExpectedResponse, a)
 			if err != nil {
-				assert.Equal(t, test.ExpectedError, err.Error())
+				assert.True(t, strings.Contains(err.Error(), test.ExpectedError))
 				assert.Equal(t, 1, len(errorsLogged))
 			} else {
 				assert.Equal(t, "", test.ExpectedError)
