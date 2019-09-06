@@ -54,11 +54,9 @@ func runCrawler(
 	// assert environment
 	parseEnv()
 	// crawl with passed args
-	MAX_APPROX_NODES, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	crawler.ServeMetrics()
 	crawler.Run(
 		os.Getenv("STARTING_ENDPOINT"),
-		int32(MAX_APPROX_NODES),
 		isValidCrawlLink,
 		db.ConnectToDB,
 		addEdgeIfDoesNotExist,

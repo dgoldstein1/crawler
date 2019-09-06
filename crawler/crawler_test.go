@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"strings"
 	"testing"
 )
@@ -107,9 +108,10 @@ func TestRun(t *testing.T) {
 	for _, test := range testTable {
 		// run tests
 		t.Run(test.Name, func(t *testing.T) {
+			os.Setenv("MAX_APPROX_NODES", string(test.MaxNodes))
+			defer os.Unsetenv("MAX_APPROX_NODES")
 			Run(
 				test.StartingEndpoint,
-				test.MaxNodes,
 				isValidCrawlLink,
 				test.ConnectToDB,
 				addEdge,

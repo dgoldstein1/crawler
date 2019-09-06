@@ -3,6 +3,8 @@ package crawler
 import (
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -14,7 +16,6 @@ var logFatal = log.Fatalf
 // crawls until approximateMaxNodes nodes is reached
 func Run(
 	endpoint string,
-	approximateMaxNodes int32,
 	isValidCrawlLink IsValidCrawlLinkFunction,
 	connectToDB ConnectToDBFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
@@ -33,9 +34,11 @@ func Run(
 			endpoint = e
 		}
 	}
+	// parse out env
+	maxNodes, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
 	Crawl(
 		endpoint,
-		approximateMaxNodes,
+		int32(maxNodes),
 		isValidCrawlLink,
 		addEdgesIfDoNotExist,
 	)
@@ -55,7 +58,7 @@ func Crawl(
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
-		Parallelism: 10,
+		Parallelism: 15,
 		Delay:       5 * time.Millisecond,
 	})
 
