@@ -36,9 +36,13 @@ func Run(
 	}
 	// parse out env
 	maxNodes, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
+	parallelism, _ := strconv.Atoi(os.Getenv("PARALLELISM"))
+	msDelay, _ := strconv.Atoi(os.Getenv("MS_DELAY"))
 	Crawl(
 		endpoint,
 		int32(maxNodes),
+		int32(parallelism),
+		int32(msDelay),
 		isValidCrawlLink,
 		addEdgesIfDoNotExist,
 	)
@@ -48,6 +52,8 @@ func Run(
 func Crawl(
 	endpoint string,
 	approximateMaxNodes int32,
+	parallelism int32,
+	msDelay int32,
 	isValidCrawlLink IsValidCrawlLinkFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
 ) {
