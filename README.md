@@ -55,6 +55,23 @@ crawler wikipedia
 go test $(go list ./... | grep -v /vendor/)
 ```
 
+#### Benchmarks
+
+
+| Parallelism | Nodes Added | Time | Nodes / Sec | delay |
+|-------------|-------------|------|-------------|-------|
+| 1           | 90055       | 28.9 | 3116.1      | 5ms   |
+| 2           | 119649      | 29.2 | 4097.5      | 5ms   |
+| 4           | 118064      | 22.5 | 5158.4      | 5ms   |
+| 8           | 328674      | 29.2 | 11255.9     | 5m    |
+| 16          | 342114      | 29.0 | 11797.0     | 5m    |
+| 32          | 364773      | 28.2 | 12935.2     | 5m    |
+
+Time to get to 1001007 nodes: 3m18.5
+Nodes / Sec: 5055.5
+Size of graph: 644kb
+Size of entries: 32mb
+
 ## Authors
 
 * **David Goldstein** - [DavidCharlesGoldstein.com](http://www.davidcharlesgoldstein.com/?github-wikipeida-path) - [Decipher Technology Studios](http://deciphernow.com/)
