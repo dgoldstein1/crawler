@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"strings"
 	"testing"
 )
@@ -107,9 +108,10 @@ func TestRun(t *testing.T) {
 	for _, test := range testTable {
 		// run tests
 		t.Run(test.Name, func(t *testing.T) {
+			os.Setenv("MAX_APPROX_NODES", string(test.MaxNodes))
+			defer os.Unsetenv("MAX_APPROX_NODES")
 			Run(
 				test.StartingEndpoint,
-				test.MaxNodes,
 				isValidCrawlLink,
 				test.ConnectToDB,
 				addEdge,
@@ -174,7 +176,7 @@ func TestCrawl(t *testing.T) {
 	t.Run("works with isValidCrawlLink", func(t *testing.T) {
 		nodesAdded = []string{}
 		// function doing setup of tests
-		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, isValidCrawlLink, addEdges)
+		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, 1, 0, isValidCrawlLink, addEdges)
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			errors = []string{}
 			for _, url := range nodesAdded {
@@ -200,6 +202,8 @@ func TestCrawl(t *testing.T) {
 		Crawl(
 			endpoint,
 			100,
+			1,
+			0,
 			isValidCrawlLink,
 			func(currNode string, neighborNodes []string) ([]string, error) {
 				temp := []string{}
@@ -225,6 +229,8 @@ func TestCrawl(t *testing.T) {
 		Crawl(
 			endpoint,
 			1000,
+			1,
+			0,
 			isValidCrawlLink,
 			func(currNode string, neighborNodes []string) ([]string, error) {
 				temp := []string{}

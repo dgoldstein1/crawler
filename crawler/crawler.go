@@ -3,6 +3,9 @@ package crawler
 import (
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"strconv"
+	"time"
 )
 
 var logMsg = log.Infof
@@ -13,7 +16,6 @@ var logFatal = log.Fatalf
 // crawls until approximateMaxNodes nodes is reached
 func Run(
 	endpoint string,
-	approximateMaxNodes int32,
 	isValidCrawlLink IsValidCrawlLinkFunction,
 	connectToDB ConnectToDBFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
@@ -32,9 +34,15 @@ func Run(
 			endpoint = e
 		}
 	}
+	// parse out env
+	maxNodes, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
+	parallelism, _ := strconv.Atoi(os.Getenv("PARALLELISM"))
+	msDelay, _ := strconv.Atoi(os.Getenv("MS_DELAY"))
 	Crawl(
 		endpoint,
-		approximateMaxNodes,
+		int32(maxNodes),
+		parallelism,
+		msDelay,
 		isValidCrawlLink,
 		addEdgesIfDoNotExist,
 	)
@@ -44,6 +52,8 @@ func Run(
 func Crawl(
 	endpoint string,
 	approximateMaxNodes int32,
+	parallelism int,
+	msDelay int,
 	isValidCrawlLink IsValidCrawlLinkFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
 ) {
@@ -54,7 +64,8 @@ func Crawl(
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
-		Parallelism: 2,
+		Parallelism: parallelism,
+		Delay:       time.Duration(msDelay) * time.Millisecond,
 	})
 
 	// On every a element which has href attribute call callback
