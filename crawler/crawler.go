@@ -3,6 +3,7 @@ package crawler
 import (
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 var logMsg = log.Infof
@@ -54,7 +55,8 @@ func Crawl(
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
-		Parallelism: 2,
+		Parallelism: 10,
+		Delay:       5 * time.Millisecond,
 	})
 
 	// On every a element which has href attribute call callback

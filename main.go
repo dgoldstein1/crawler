@@ -32,12 +32,16 @@ func parseEnv() {
 			logMsg("%s=%s", v, os.Getenv(v))
 		}
 	}
-	i, err := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
-	if err != nil {
-		logFatalf(err.Error())
-	}
-	if i < 1 && i != -1 {
-		logFatalf("MAX_APPROX_NODES must be greater than 1 but was '%i'", i)
+	numberVars := []string{"MAX_APPROX_NODES", "PARALLELISM", "MS_DELAY"}
+	for _, e := range numberVars {
+		i, err := strconv.Atoi(os.Getenv(e))
+		if err != nil {
+			logFatalf(err.Error())
+		}
+		if i < 1 && i != -1 {
+			logFatalf("%s must be greater than 1 but was '%i'", e, i)
+		}
+
 	}
 }
 

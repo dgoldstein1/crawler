@@ -32,6 +32,8 @@ or with dependencies running locally
 export GRAPH_DB_ENDPOINT="http://localhost:5000" # endpoint of graph database
 export TWO_WAY_KV_ENDPOINT="http://localhost:5001" # endpoint of k:v <-> v:k lookup metadata db
 export STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese" # if empty, finds random article
+export PARALLELISM=20 # number of parallel threads to run
+export MS_DELAY=5 # ms delay between each request
 export METRICS_PORT=8002 # port where prom metrics are served
 export MAX_APPROX_NODES=1000 # approximate number of nodes to visit (+/- one order of magnitude), set to '-1' for unlimited crawl
 crawler wikipedia
