@@ -41,8 +41,8 @@ func Run(
 	Crawl(
 		endpoint,
 		int32(maxNodes),
-		int32(parallelism),
-		int32(msDelay),
+		parallelism,
+		msDelay,
 		isValidCrawlLink,
 		addEdgesIfDoNotExist,
 	)
@@ -52,8 +52,8 @@ func Run(
 func Crawl(
 	endpoint string,
 	approximateMaxNodes int32,
-	parallelism int32,
-	msDelay int32,
+	parallelism int,
+	msDelay int,
 	isValidCrawlLink IsValidCrawlLinkFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
 ) {
@@ -64,8 +64,8 @@ func Crawl(
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
-		Parallelism: 15,
-		Delay:       5 * time.Millisecond,
+		Parallelism: parallelism,
+		Delay:       time.Duration(msDelay) * time.Millisecond,
 	})
 
 	// On every a element which has href attribute call callback
