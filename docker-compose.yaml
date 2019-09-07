@@ -1,8 +1,12 @@
 version: "3.7"
 services:
 
-  c1:
-    image: dgoldstein1/crawler
+  ##############
+  ## Crawlers ##
+  ##############
+
+  crawler:
+    image: dgoldstein1/crawler:latest
     depends_on:
       - kv
       - graph
@@ -10,33 +14,15 @@ services:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
       - MAX_APPROX_NODES=10
-      - METRICS_PORT=8001
       - COMMAND=wikipedia
-
-  c2:
-    image: dgoldstein1/crawler
-    depends_on:
-      - kv
-      - graph
-    environment:
-      - GRAPH_DB_ENDPOINT=http://graph:5000
-      - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - MAX_APPROX_NODES=10
       - METRICS_PORT=8001
-      - COMMAND=wikipedia
+      - PARALLELISM=16
+      - MS_DELAY=5
 
-  c3:
-    image: dgoldstein1/crawler
-    depends_on:
-      - kv
-      - graph
-    environment:
-      - GRAPH_DB_ENDPOINT=http://graph:5000
-      - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - MAX_APPROX_NODES=10
-      - METRICS_PORT=8001
-      - COMMAND=wikipedia
 
+  ##############
+  ## Services ##
+  ##############
 
   kv:
     image: dgoldstein1/twowaykv:latest
