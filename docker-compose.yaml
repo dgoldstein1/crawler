@@ -16,7 +16,7 @@ services:
       - MAX_APPROX_NODES=10
       - COMMAND=wikipedia
       - METRICS_PORT=8001
-      - PARELLELISM=16
+      - PARALLELISM=16
       - MS_DELAY=5
 
 
