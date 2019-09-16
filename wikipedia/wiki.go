@@ -66,9 +66,16 @@ func AddEdgesIfDoNotExist(
 	err error,
 ) {
 	// trim current node if needed
-	currentNode = strings.TrimPrefix(currentNode, "https://en.wikipedia.org")
+	currentNode = strings.TrimPrefix(currentNode, baseEndpoint)
+	currentNode = strings.TrimPrefix(currentNode, prefix)
+	currentNode = strings.ToLower(currentNode)
 	neighborsAdded = []string{}
 	// get IDs from page keys
+	for i, n := range neighborNodes {
+		neighborNodes[i] = strings.TrimPrefix(n, baseEndpoint)
+		neighborNodes[i] = strings.TrimPrefix(n, prefix)
+		neighborNodes[i] = strings.ToLower(neighborNodes[i])
+	}
 	twoWayResp, err := db.GetArticleIds(append(neighborNodes, currentNode))
 	if err != nil {
 		logErr("Could not get neighbor Ids %v", err)
@@ -104,7 +111,7 @@ func AddEdgesIfDoNotExist(
 		for _, nAdded := range graphResp.NeighborsAdded {
 			if entry.Value == nAdded {
 				// add back in prefix
-				neighborsAdded = append(neighborsAdded, baseEndpoint+entry.Key)
+				neighborsAdded = append(neighborsAdded, baseEndpoint+prefix+entry.Key)
 			}
 		}
 	}

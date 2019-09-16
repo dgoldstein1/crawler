@@ -129,10 +129,10 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
 							"entries": []db.TwoWayEntry{
-								db.TwoWayEntry{"/wiki/test", 1},
-								db.TwoWayEntry{"/wiki/test1", 2},
-								db.TwoWayEntry{"/wiki/test2", 3},
-								db.TwoWayEntry{"/wiki/test3", 4},
+								db.TwoWayEntry{"test", 1},
+								db.TwoWayEntry{"test1", 2},
+								db.TwoWayEntry{"test2", 3},
+								db.TwoWayEntry{"test3", 4},
 							},
 						})
 					},
@@ -159,10 +159,10 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
 							"entries": []db.TwoWayEntry{
-								db.TwoWayEntry{"/wiki/test", 1},
-								db.TwoWayEntry{"/wiki/test1", 2},
-								db.TwoWayEntry{"/wiki/test2", 3},
-								db.TwoWayEntry{"/wiki/test3", 4},
+								db.TwoWayEntry{"test", 1},
+								db.TwoWayEntry{"test1", 2},
+								db.TwoWayEntry{"test2", 3},
+								db.TwoWayEntry{"test3", 4},
 							},
 						})
 					},
@@ -189,10 +189,10 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
 							"entries": []db.TwoWayEntry{
-								db.TwoWayEntry{"/wiki/test", 1},
-								db.TwoWayEntry{"/wiki/test1", 2},
-								db.TwoWayEntry{"/wiki/test2", 3},
-								db.TwoWayEntry{"/wiki/test3", 4},
+								db.TwoWayEntry{"test", 1},
+								db.TwoWayEntry{"test1", 2},
+								db.TwoWayEntry{"test2", 3},
+								db.TwoWayEntry{"test3", 4},
 							},
 						})
 					},
@@ -241,10 +241,10 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
 							"entries": []db.TwoWayEntry{
-								db.TwoWayEntry{"/wiki/test", 1},
-								db.TwoWayEntry{"/wiki/test1", 2},
-								db.TwoWayEntry{"/wiki/test2", 3},
-								db.TwoWayEntry{"/wiki/test3", 4},
+								db.TwoWayEntry{"test", 1},
+								db.TwoWayEntry{"test1", 2},
+								db.TwoWayEntry{"test2", 3},
+								db.TwoWayEntry{"test3", 4},
 							},
 						})
 					},
@@ -270,10 +270,10 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 						return httpmock.NewJsonResponse(200, map[string]interface{}{
 							"errors": []string{"test"},
 							"entries": []db.TwoWayEntry{
-								// db.TwoWayEntry{"/wiki/test", 1}, >> mock db not returning correct node
-								db.TwoWayEntry{"/wiki/test1", 2},
-								db.TwoWayEntry{"/wiki/test2", 3},
-								db.TwoWayEntry{"/wiki/test3", 4},
+								// db.TwoWayEntry{"test", 1}, >> mock db not returning correct node
+								db.TwoWayEntry{"test1", 2},
+								db.TwoWayEntry{"test2", 3},
+								db.TwoWayEntry{"test3", 4},
 							},
 						})
 					},
