@@ -68,11 +68,13 @@ func AddEdgesIfDoNotExist(
 	// trim current node if needed
 	currentNode = strings.TrimPrefix(currentNode, baseEndpoint)
 	currentNode = strings.TrimPrefix(currentNode, prefix)
+	currentNode = strings.ToLower(currentNode)
 	neighborsAdded = []string{}
 	// get IDs from page keys
 	for i, n := range neighborNodes {
 		neighborNodes[i] = strings.TrimPrefix(n, baseEndpoint)
 		neighborNodes[i] = strings.TrimPrefix(n, prefix)
+		neighborNodes[i] = strings.ToLower(neighborNodes[i])
 	}
 	twoWayResp, err := db.GetArticleIds(append(neighborNodes, currentNode))
 	if err != nil {

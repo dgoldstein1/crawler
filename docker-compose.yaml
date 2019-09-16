@@ -13,7 +13,7 @@ services:
     environment:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
-      - MAX_APPROX_NODES=10
+      - MAX_APPROX_NODES=100
       - COMMAND=wikipedia
       - METRICS_PORT=8001
       - PARALLELISM=16
