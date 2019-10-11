@@ -60,6 +60,11 @@ func GetRandomArticle() (string, error) {
 	return "", fmt.Errorf("Could not find article in metawiki response:  %v+", rArticle)
 }
 
+// decodes and standaridizes URL
+func CleanUrl(link string) string {
+	return link
+}
+
 // adds edge to DB, returns new neighbors added (to crawl on)
 func AddEdgesIfDoNotExist(
 	currentNode string,

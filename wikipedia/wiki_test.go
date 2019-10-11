@@ -35,6 +35,29 @@ func TestIsValidCrawlLink(t *testing.T) {
 	})
 }
 
+func TestCleanURL(t *testing.T) {
+	type Test struct {
+		Name             string
+		URL              string
+		expectedResponse string
+	}
+
+	testTable := []Test{
+		Test{
+			Name:             "decodes string",
+			URL:              "/sdlfkjsldkj",
+			expectedResponse: "/sdlfkjsldkj",
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			assert.Equal(t, CleanUrl(test.URL), test.expectedResponse)
+		})
+	}
+
+}
+
 func TestGetRandomArticle(t *testing.T) {
 	errorsLogged := []string{}
 	logErr = func(format string, args ...interface{}) {
