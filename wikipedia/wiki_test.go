@@ -44,9 +44,19 @@ func TestCleanURL(t *testing.T) {
 
 	testTable := []Test{
 		Test{
-			Name:             "decodes string",
-			URL:              "/sdlfkjsldkj",
-			expectedResponse: "/sdlfkjsldkj",
+			Name:             "removes prefixes and spaces",
+			URL:              "/wiki/Maytag_Blue_cheese",
+			expectedResponse: "maytag blue cheese",
+		},
+		Test{
+			Name:             "decodes URL in string",
+			URL:              "/wiki/ingeni%c3%b8ren",
+			expectedResponse: "ingeniøren",
+		},
+		Test{
+			Name:             "invalid unescape sequence",
+			URL:              "/wiki/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
+			expectedResponse: "",
 		},
 	}
 

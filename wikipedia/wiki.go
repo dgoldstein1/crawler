@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -66,6 +67,12 @@ func CleanUrl(link string) string {
 	link = strings.TrimPrefix(link, baseEndpoint)
 	link = strings.TrimPrefix(link, prefix)
 	link = strings.ToLower(link)
+	link = strings.ReplaceAll(link, "_", " ")
+	// decode string
+	link, err := url.QueryUnescape(link)
+	if err != nil {
+		logErr("Could not decode string %s: %v", link, err)
+	}
 	return link
 }
 
