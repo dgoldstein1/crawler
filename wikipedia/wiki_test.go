@@ -261,7 +261,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{},
+			ExpectedResponse: []string(nil),
 			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
 		},
 
@@ -291,7 +291,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{},
+			ExpectedResponse: []string(nil),
 			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
 		},
 		Test{
@@ -321,7 +321,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{},
+			ExpectedResponse: []string(nil),
 			ExpectedError:    errors.New("Could not find node on reverse lookup"),
 		},
 	}
