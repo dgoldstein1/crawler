@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -23,7 +24,10 @@ var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
-	return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") && !strings.Contains(link, "#")
+	validPrefix := strings.HasPrefix(link, "/wiki/")
+	isNotMainPage := strings.ToLower(link) != "/wiki/main_page"
+	noillegalChars := !strings.Contains(link, ":") && !strings.Contains(link, "#")
+	return validPrefix && isNotMainPage && noillegalChars
 }
 
 // gets random article from metawiki API
@@ -57,6 +61,21 @@ func GetRandomArticle() (string, error) {
 	return "", fmt.Errorf("Could not find article in metawiki response:  %v+", rArticle)
 }
 
+// decodes and standaridizes URL
+func CleanUrl(link string) string {
+	// trim current node if needed
+	link = strings.TrimPrefix(link, baseEndpoint)
+	link = strings.TrimPrefix(link, prefix)
+	link = strings.ToLower(link)
+	link = strings.ReplaceAll(link, "_", " ")
+	// decode string
+	link, err := url.QueryUnescape(link)
+	if err != nil {
+		logErr("Could not decode string %s: %v", link, err)
+	}
+	return link
+}
+
 // adds edge to DB, returns new neighbors added (to crawl on)
 func AddEdgesIfDoNotExist(
 	currentNode string,
@@ -66,17 +85,15 @@ func AddEdgesIfDoNotExist(
 	err error,
 ) {
 	// trim current node if needed
-	currentNode = strings.TrimPrefix(currentNode, baseEndpoint)
-	currentNode = strings.TrimPrefix(currentNode, prefix)
-	currentNode = strings.ToLower(currentNode)
-	neighborsAdded = []string{}
+	currentNode = CleanUrl(currentNode)
 	// get IDs from page keys
+	// make big map of  cleanName : originalName for later
+	nodes := make(map[string]string)
 	for i, n := range neighborNodes {
-		neighborNodes[i] = strings.TrimPrefix(n, baseEndpoint)
-		neighborNodes[i] = strings.TrimPrefix(n, prefix)
-		neighborNodes[i] = strings.ToLower(neighborNodes[i])
+		neighborNodes[i] = CleanUrl(n)
+		nodes[CleanUrl(n)] = n
 	}
-	twoWayResp, err := db.GetArticleIds(append(neighborNodes, currentNode))
+	twoWayResp, err := db.GetArticleIds(append(neighborNodes, CleanUrl(currentNode)))
 	if err != nil {
 		logErr("Could not get neighbor Ids %v", err)
 		return neighborsAdded, err
@@ -111,7 +128,7 @@ func AddEdgesIfDoNotExist(
 		for _, nAdded := range graphResp.NeighborsAdded {
 			if entry.Value == nAdded {
 				// add back in prefix
-				neighborsAdded = append(neighborsAdded, baseEndpoint+prefix+entry.Key)
+				neighborsAdded = append(neighborsAdded, baseEndpoint+nodes[entry.Key])
 			}
 		}
 	}

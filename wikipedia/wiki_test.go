@@ -27,6 +27,45 @@ func TestIsValidCrawlLink(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("wikipedia/wiki/"), false)
 		assert.Equal(t, IsValidCrawlLink("/wiki/binary"), true)
 	})
+	t.Run("doesn't accept 'main_page'", func(t *testing.T) {
+		assert.Equal(t, IsValidCrawlLink("/wiki/Main_Page"), false)
+		assert.Equal(t, IsValidCrawlLink("/wiki/main_Page"), false)
+		assert.Equal(t, IsValidCrawlLink("/wiki/main_page"), false)
+
+	})
+}
+
+func TestCleanURL(t *testing.T) {
+	type Test struct {
+		Name             string
+		URL              string
+		expectedResponse string
+	}
+
+	testTable := []Test{
+		Test{
+			Name:             "removes prefixes and spaces",
+			URL:              "/wiki/Maytag_Blue_cheese",
+			expectedResponse: "maytag blue cheese",
+		},
+		Test{
+			Name:             "decodes URL in string",
+			URL:              "/wiki/ingeni%c3%b8ren",
+			expectedResponse: "ingeniøren",
+		},
+		Test{
+			Name:             "invalid unescape sequence",
+			URL:              "/wiki/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
+			expectedResponse: "",
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			assert.Equal(t, CleanUrl(test.URL), test.expectedResponse)
+		})
+	}
+
 }
 
 func TestGetRandomArticle(t *testing.T) {
@@ -222,7 +261,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{},
+			ExpectedResponse: []string(nil),
 			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
 		},
 
@@ -252,7 +291,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{},
+			ExpectedResponse: []string(nil),
 			ExpectedError:    errors.New("Could not connect to TWO_WAY_KV_ENDPOINT"),
 		},
 		Test{
@@ -282,7 +321,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 			},
 			CurrNode:         "/wiki/test",
 			NeighborNodes:    []string{"/wiki/test1", "/wiki/test1", "/wiki/test2", "/wiki/test3"},
-			ExpectedResponse: []string{},
+			ExpectedResponse: []string(nil),
 			ExpectedError:    errors.New("Could not find node on reverse lookup"),
 		},
 	}
