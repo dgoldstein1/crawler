@@ -62,6 +62,10 @@ func GetRandomArticle() (string, error) {
 
 // decodes and standaridizes URL
 func CleanUrl(link string) string {
+	// trim current node if needed
+	link = strings.TrimPrefix(link, baseEndpoint)
+	link = strings.TrimPrefix(link, prefix)
+	link = strings.ToLower(link)
 	return link
 }
 
@@ -74,15 +78,11 @@ func AddEdgesIfDoNotExist(
 	err error,
 ) {
 	// trim current node if needed
-	currentNode = strings.TrimPrefix(currentNode, baseEndpoint)
-	currentNode = strings.TrimPrefix(currentNode, prefix)
-	currentNode = strings.ToLower(currentNode)
+	currentNode = CleanUrl(currentNode)
 	neighborsAdded = []string{}
 	// get IDs from page keys
 	for i, n := range neighborNodes {
-		neighborNodes[i] = strings.TrimPrefix(n, baseEndpoint)
-		neighborNodes[i] = strings.TrimPrefix(n, prefix)
-		neighborNodes[i] = strings.ToLower(neighborNodes[i])
+		neighborNodes[i] = CleanUrl(n)
 	}
 	twoWayResp, err := db.GetArticleIds(append(neighborNodes, currentNode))
 	if err != nil {
