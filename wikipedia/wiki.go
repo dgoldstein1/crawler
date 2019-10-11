@@ -76,12 +76,6 @@ func CleanUrl(link string) string {
 	return link
 }
 
-// structure for keeping track of original url, cleaned name, and ID
-type node struct {
-	url string
-	id  int
-}
-
 // adds edge to DB, returns new neighbors added (to crawl on)
 func AddEdgesIfDoNotExist(
 	currentNode string,
@@ -90,14 +84,14 @@ func AddEdgesIfDoNotExist(
 	neighborsAdded []string,
 	err error,
 ) {
-	// make big map of  clean : values
-	nodes := make(map[string]node)
-	nodes[CleanUrl(currentNode)] = node{currentNode, -1}
 	// trim current node if needed
 	currentNode = CleanUrl(currentNode)
 	// get IDs from page keys
+	// make big map of  cleanName : originalName for later
+	nodes := make(map[string]string)
 	for i, n := range neighborNodes {
 		neighborNodes[i] = CleanUrl(n)
+		nodes[CleanUrl(n)] = n
 	}
 	twoWayResp, err := db.GetArticleIds(append(neighborNodes, CleanUrl(currentNode)))
 	if err != nil {
@@ -134,7 +128,7 @@ func AddEdgesIfDoNotExist(
 		for _, nAdded := range graphResp.NeighborsAdded {
 			if entry.Value == nAdded {
 				// add back in prefix
-				neighborsAdded = append(neighborsAdded, baseEndpoint+prefix+entry.Key)
+				neighborsAdded = append(neighborsAdded, baseEndpoint+nodes[entry.Key])
 			}
 		}
 	}
