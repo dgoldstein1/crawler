@@ -23,7 +23,10 @@ var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
-	return strings.HasPrefix(link, "/wiki/") && !strings.Contains(link, ":") && !strings.Contains(link, "#")
+	validPrefix := strings.HasPrefix(link, "/wiki/")
+	isNotMainPage := strings.ToLower(link) != "/wiki/main_page"
+	noillegalChars := !strings.Contains(link, ":") && !strings.Contains(link, "#")
+	return validPrefix && isNotMainPage && noillegalChars
 }
 
 // gets random article from metawiki API
