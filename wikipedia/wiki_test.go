@@ -27,6 +27,12 @@ func TestIsValidCrawlLink(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("wikipedia/wiki/"), false)
 		assert.Equal(t, IsValidCrawlLink("/wiki/binary"), true)
 	})
+	t.Run("doesn't accept 'main_page'", func(t *testing.T) {
+		assert.Equal(t, IsValidCrawlLink("/wiki/Main_Page"), false)
+		assert.Equal(t, IsValidCrawlLink("/wiki/main_Page"), false)
+		assert.Equal(t, IsValidCrawlLink("/wiki/main_page"), false)
+
+	})
 }
 
 func TestGetRandomArticle(t *testing.T) {
