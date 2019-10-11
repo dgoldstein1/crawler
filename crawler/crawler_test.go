@@ -249,4 +249,27 @@ func TestCrawl(t *testing.T) {
 		assert.Equal(t, []string{}, errors)
 
 	})
+	t.Run("on error works correctly", func(t *testing.T) {
+		nodesAdded = []string{}
+		logs = []string{}
+		errors = []string{}
+		Crawl(
+			endpoint+"/thisisabadendpoint",
+			1000,
+			1,
+			0,
+			isValidCrawlLink,
+			func(currNode string, neighborNodes []string) ([]string, error) {
+				temp := []string{}
+				for _, v := range neighborNodes {
+					temp = append(temp, "https://skldlfjlskjdflkjsdf.org"+v)
+				}
+				nodesAdded = append(nodesAdded, temp...)
+				return temp, nil
+			},
+		)
+		assert.Equal(t, 0, len(nodesAdded))
+		assert.Equal(t, 1, len(errors))
+
+	})
 }
