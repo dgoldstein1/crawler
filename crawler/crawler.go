@@ -68,6 +68,10 @@ func Crawl(
 		Delay:       time.Duration(msDelay) * time.Millisecond,
 	})
 
+	c.OnError(func(r *colly.Response, err error) {
+		logErr("Error parsing page %s: %v", r.Request.URL, err)
+	})
+
 	// On every a element which has href attribute call callback
 	c.OnHTML("html", func(e *colly.HTMLElement) {
 		logMsg("parsing %s", e.Request.URL.String())
