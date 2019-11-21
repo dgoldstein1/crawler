@@ -2,7 +2,6 @@ package wikipedia
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/dgoldstein1/crawler/db"
 	"github.com/gocolly/colly"
@@ -84,53 +83,10 @@ func AddEdgesIfDoNotExist(
 	neighborsAdded []string,
 	err error,
 ) {
-	// trim current node if needed
-	currentNode = CleanUrl(currentNode)
-	// get IDs from page keys
-	// make big map of  cleanName : originalName for later
-	nodes := make(map[string]string)
-	for i, n := range neighborNodes {
-		neighborNodes[i] = CleanUrl(n)
-		nodes[CleanUrl(n)] = n
-	}
-	twoWayResp, err := db.GetArticleIds(append(neighborNodes, CleanUrl(currentNode)))
-	if err != nil {
-		logErr("Could not get neighbor Ids %v", err)
-		return neighborsAdded, err
-	}
-	// log out errors, if any
-	for _, e := range twoWayResp.Errors {
-		logErr("Error getting article ID: %s", e)
-	}
-	// map string => id (int)
-	currentNodeId := -1
-	neighborNodesIds := []int{}
-	for _, entry := range twoWayResp.Entries {
-		if entry.Key == currentNode {
-			currentNodeId = entry.Value
-		} else {
-			neighborNodesIds = append(neighborNodesIds, entry.Value)
-		}
-	}
-	// current cannot be -1
-	if currentNodeId == -1 {
-		logErr("Could not find reverse string => int lookup from \n resp: %v, \n currentNode: %s, \n neighbors : %v", twoWayResp.Entries, currentNode, neighborNodes)
-		return neighborsAdded, errors.New("Could not find node on reverse lookup")
-	}
-	// post IDs to graph db
-	graphResp, err := db.AddNeighbors(currentNodeId, neighborNodesIds)
-	if err != nil {
-		logErr("Could not POST to graph DB")
-		return neighborsAdded, err
-	}
-	// map id => string
-	for _, entry := range twoWayResp.Entries {
-		for _, nAdded := range graphResp.NeighborsAdded {
-			if entry.Value == nAdded {
-				// add back in prefix
-				neighborsAdded = append(neighborsAdded, baseEndpoint+nodes[entry.Key])
-			}
-		}
-	}
-	return neighborsAdded, err
+	return db.AddEdgesIfDoNotExist(
+		currentNode,
+		neighborNodes,
+		CleanUrl,
+		baseEndpoint,
+	)
 }

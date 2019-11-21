@@ -114,3 +114,64 @@ func ConnectToDB() error {
 	_, err = ioutil.ReadAll(resp.Body)
 	return err
 }
+
+// adds edge to DB, returns new neighbors added (to crawl on)
+func AddEdgesIfDoNotExist(
+	currentNode string,
+	neighborNodes []string,
+	cleanUrl func(string) string,
+	baseEndpoint string,
+) (
+	neighborsAdded []string,
+	err error,
+) {
+	// trim current node if needed
+	currentNode = cleanUrl(currentNode)
+	// get IDs from page keys
+	// make big map of  cleanName : originalName for later
+	nodes := make(map[string]string)
+	for i, n := range neighborNodes {
+		neighborNodes[i] = cleanUrl(n)
+		nodes[cleanUrl(n)] = n
+	}
+	twoWayResp, err := GetArticleIds(append(neighborNodes, cleanUrl(currentNode)))
+	if err != nil {
+		logErr("Could not get neighbor Ids %v", err)
+		return neighborsAdded, err
+	}
+	// log out errors, if any
+	for _, e := range twoWayResp.Errors {
+		logErr("Error getting article ID: %s", e)
+	}
+	// map string => id (int)
+	currentNodeId := -1
+	neighborNodesIds := []int{}
+	for _, entry := range twoWayResp.Entries {
+		if entry.Key == currentNode {
+			currentNodeId = entry.Value
+		} else {
+			neighborNodesIds = append(neighborNodesIds, entry.Value)
+		}
+	}
+	// current cannot be -1
+	if currentNodeId == -1 {
+		logErr("Could not find reverse string => int lookup from \n resp: %v, \n currentNode: %s, \n neighbors : %v", twoWayResp.Entries, currentNode, neighborNodes)
+		return neighborsAdded, errors.New("Could not find node on reverse lookup")
+	}
+	// post IDs to graph db
+	graphResp, err := AddNeighbors(currentNodeId, neighborNodesIds)
+	if err != nil {
+		logErr("Could not POST to graph DB")
+		return neighborsAdded, err
+	}
+	// map id => string
+	for _, entry := range twoWayResp.Entries {
+		for _, nAdded := range graphResp.NeighborsAdded {
+			if entry.Value == nAdded {
+				// add back in prefix
+				neighborsAdded = append(neighborsAdded, baseEndpoint+nodes[entry.Key])
+			}
+		}
+	}
+	return neighborsAdded, err
+}
