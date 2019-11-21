@@ -1,11 +1,14 @@
 package synonyms
 
 import (
+	"bufio"
 	"errors"
 	"github.com/dgoldstein1/crawler/db"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	"math/rand"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -25,10 +28,29 @@ func IsValidCrawlLink(link string) bool {
 	return validPrefix && isNotMainPage && noillegalChars
 }
 
-// gets random article from metawiki API
+// gets random article from a local file
 // returns article in the form "/synonym/XXXXX"
 func GetRandomArticle() (string, error) {
-	return "", errors.New("not implemented")
+	path := os.Getenv("ENGLISH_WORD_LIST_PATH")
+	if path == "" {
+		return "", errors.New("ENGLISH_WORD_LIST_PATH was not set")
+	}
+	// read in file to list of strings
+	file, err := os.Open(path)
+	defer file.Close()
+	if err != nil {
+		return "", err
+	}
+	scanner := bufio.NewScanner(file)
+	words := []string{}
+	for scanner.Scan() {
+		words = append(words, strings.ToLower(scanner.Text()))
+	}
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+	// get random index of list
+	return words[rand.Intn(len(words))], nil
 }
 
 // decodes and standaridizes URL
