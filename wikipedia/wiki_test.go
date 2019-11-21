@@ -122,3 +122,10 @@ func TestGetRandomArticle(t *testing.T) {
 	}
 
 }
+
+func TestAddEdgesIfDoNotExist(t *testing.T) {
+	node := "/wiki/test"
+	neighbors := []string{}
+	added, _ := AddEdgesIfDoNotExist(node, neighbors)
+	assert.Equal(t, added, []string(nil))
+}
