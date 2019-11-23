@@ -46,11 +46,9 @@ func GetRandomNode() (string, error) {
 	for scanner.Scan() {
 		words = append(words, strings.ToLower(scanner.Text()))
 	}
-	if err := scanner.Err(); err != nil {
-		return "", err
-	}
+	err = scanner.Err()
 	// get random index of list
-	return words[rand.Intn(len(words))], nil
+	return words[rand.Intn(len(words))], err
 }
 
 // decodes and standaridizes URL
