@@ -3,6 +3,7 @@ package crawler
 import (
 	"errors"
 	"fmt"
+	"github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"strings"
@@ -43,6 +44,7 @@ func TestRun(t *testing.T) {
 		StartingEndpoint string
 		ConnectToDB      func() error
 		GetNewNode       func() (string, error)
+		FilterPage       FilterPageFunction
 		MaxNodes         int32
 		MinNodesAdded    int
 		MaxNodesAdded    int
@@ -58,6 +60,7 @@ func TestRun(t *testing.T) {
 				newNodeRetrieved = true
 				return "https://en.wikipedia.org/wiki/String_cheese", nil
 			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 			MaxNodes:         100,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
@@ -71,6 +74,7 @@ func TestRun(t *testing.T) {
 				newNodeRetrieved = true
 				return "https://en.wikipedia.org/wiki/String_cheese", nil
 			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 			MaxNodes:         1,
 			MinNodesAdded:    0,
 			MaxNodesAdded:    0,
@@ -84,13 +88,13 @@ func TestRun(t *testing.T) {
 				newNodeRetrieved = true
 				return "https://en.wikipedia.org/wiki/String_cheese", nil
 			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 			MaxNodes:         100,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
 			NewNodeRetrieved: true,
 		},
 		Test{
-
 			Name:             "fails when cannot fetch new node",
 			StartingEndpoint: "",
 			ConnectToDB:      func() error { return nil },
@@ -98,10 +102,25 @@ func TestRun(t *testing.T) {
 				newNodeRetrieved = true
 				return "https://en.wikipedia.org/wiki/String_cheese", errors.New("Could not retrieve new node")
 			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 			MaxNodes:         100,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
 			NewNodeRetrieved: true,
+		},
+		Test{
+			Name:             "logs error when filter page fails",
+			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
+			ConnectToDB:      func() error { return nil },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/String_cheese", nil
+			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, errors.New("BAD FILTER PAGE") },
+			MaxNodes:         100,
+			MinNodesAdded:    1,
+			MaxNodesAdded:    1000,
+			NewNodeRetrieved: false,
 		},
 	}
 
@@ -116,6 +135,7 @@ func TestRun(t *testing.T) {
 				test.ConnectToDB,
 				addEdge,
 				test.GetNewNode,
+				test.FilterPage,
 			)
 			// make assertions
 			if test.Name != "cannot connect to DB" && test.Name != "fails when cannot fetch new node" {
@@ -143,6 +163,7 @@ func TestCrawl(t *testing.T) {
 		nodesAdded = append(nodesAdded, neighborNodes...)
 		return neighborNodes, nil
 	}
+	FilterPage := func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil }
 	endpoint := "https://en.wikipedia.org/wiki/String_cheese"
 
 	// mock out log.Fatalf
@@ -176,7 +197,7 @@ func TestCrawl(t *testing.T) {
 	t.Run("works with isValidCrawlLink", func(t *testing.T) {
 		nodesAdded = []string{}
 		// function doing setup of tests
-		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, 1, 0, isValidCrawlLink, addEdges)
+		Crawl("https://en.wikipedia.org/wiki/String_cheese", 2, 1, 0, isValidCrawlLink, addEdges, FilterPage)
 		t.Run("only filters on links starting with regex", func(t *testing.T) {
 			errors = []string{}
 			for _, url := range nodesAdded {
@@ -213,6 +234,7 @@ func TestCrawl(t *testing.T) {
 				nodesAdded = append(nodesAdded, temp...)
 				return temp, nil
 			},
+			func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 		)
 
 		assert.Equal(t, "starting at ["+endpoint+"]", logs[0])
@@ -240,6 +262,7 @@ func TestCrawl(t *testing.T) {
 				nodesAdded = append(nodesAdded, temp...)
 				return temp, nil
 			},
+			func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 		)
 
 		assert.Equal(t, "starting at ["+endpoint+"]", logs[0])
@@ -267,6 +290,7 @@ func TestCrawl(t *testing.T) {
 				nodesAdded = append(nodesAdded, temp...)
 				return temp, nil
 			},
+			func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 		)
 		assert.Equal(t, 0, len(nodesAdded))
 		assert.Equal(t, 1, len(errors))

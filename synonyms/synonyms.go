@@ -1,63 +1,57 @@
-package wikipedia
+package synonyms
 
 import (
-	"encoding/json"
-	"fmt"
+	"bufio"
+	"errors"
 	"github.com/dgoldstein1/crawler/db"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
+	"math/rand"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
 
 // globals
 var logErr = log.Errorf
-var prefix = "/wiki/"
-var baseEndpoint = "https://en.wikipedia.org"
-var metawikiEndpoint = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&generator=random&grnnamespace=0&grnlimit=1ts="
+var prefix = "/synonym/"
+var baseEndpoint = "http://synonyms.com"
 var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
-	validPrefix := strings.HasPrefix(link, "/wiki/")
-	isNotMainPage := strings.ToLower(link) != "/wiki/main_page"
+	validPrefix := strings.HasPrefix(link, prefix)
 	noillegalChars := !strings.Contains(link, ":") && !strings.Contains(link, "#")
-	return validPrefix && isNotMainPage && noillegalChars
+	valid := validPrefix && noillegalChars
+	if !valid {
+		logErr("invalid link found %s. validPrefix : %v, noillegalChars: %v", link, validPrefix, noillegalChars)
+	}
+	return valid
 }
 
-// gets random article from metawiki API
-// returns article in the form "/wiki/XXXXX"
+// gets random article from a local file
+// returns article in the form "/synonym/XXXXX"
 func GetRandomNode() (string, error) {
-	req, _ := http.NewRequest("GET", metawikiEndpoint, nil)
-	client := http.Client{
-		Timeout: timeout,
+	path := os.Getenv("ENGLISH_WORD_LIST_PATH")
+	if path == "" {
+		return "", errors.New("ENGLISH_WORD_LIST_PATH was not set")
 	}
-	res, err := client.Do(req)
+	// read in file to list of strings
+	file, err := os.Open(path)
+	defer file.Close()
 	if err != nil {
-		logErr("Could not get new article from metawiki server: %v", err)
 		return "", err
 	}
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		logErr("Could not read response from metawiki server: %v", err)
-		return "", err
+	scanner := bufio.NewScanner(file)
+	words := []string{}
+	for scanner.Scan() {
+		words = append(words, strings.ToLower(scanner.Text()))
 	}
-	rArticle := &RArticleResp{}
-	err = json.Unmarshal(body, &rArticle)
-	if err != nil {
-		logErr("could not unmarshal response from metawiki server: %v \n body: %s", err, string(body))
-		return "", err
-	}
-	// etract response
-	for _, p := range rArticle.Query.Pages {
-		// return on first article
-		return baseEndpoint + prefix + p.Title, nil
-	}
-	return "", fmt.Errorf("Could not find article in metawiki response:  %v+", rArticle)
+	err = scanner.Err()
+	// get random index of list
+	return baseEndpoint + prefix + words[rand.Intn(len(words))], err
 }
 
 // decodes and standaridizes URL
@@ -77,6 +71,7 @@ func CleanUrl(link string) string {
 
 // filters down full page body to elements we want to focus on
 func FilterPage(e *colly.HTMLElement) (*colly.HTMLElement, error) {
+	e.DOM = e.DOM.Find(".syns")
 	return e, nil
 }
 

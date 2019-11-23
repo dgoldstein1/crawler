@@ -3,6 +3,8 @@ defaults: &defaults
   docker:
     - image: circleci/golang:1.12
   working_directory: /go/src/github.com/dgoldstein1/crawler
+  environment:
+    - GO111MODULE: "on"
 
 version: 2
 jobs:
@@ -16,8 +18,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: go get -u github.com/golang/dep/cmd/dep
-      - run: dep ensure -v
+      - run: go get ./...
+      - run: go mod vendor
       - persist_to_workspace:
           root : .
           paths:

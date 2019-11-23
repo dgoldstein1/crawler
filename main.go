@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/dgoldstein1/crawler/crawler"
 	db "github.com/dgoldstein1/crawler/db"
+	syn "github.com/dgoldstein1/crawler/synonyms"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -50,6 +51,7 @@ func runCrawler(
 	isValidCrawlLink crawler.IsValidCrawlLinkFunction,
 	addEdgeIfDoesNotExist crawler.AddEdgeFunction,
 	getNewNode crawler.GetNewNodeFunction,
+	filterPage crawler.FilterPageFunction,
 ) {
 	// assert environment
 	parseEnv()
@@ -61,6 +63,7 @@ func runCrawler(
 		db.ConnectToDB,
 		addEdgeIfDoesNotExist,
 		getNewNode,
+		filterPage,
 	)
 }
 
@@ -69,7 +72,7 @@ func main() {
 	app.Name = "crawler"
 	app.Usage = " acustomizable web crawler script for different websites"
 	app.Description = "web crawl different URLs and add similar urls to a graph database"
-	app.Version = "1.0.0"
+	app.Version = "1.1.0"
 	app.Commands = []cli.Command{
 		{
 			Name:    "wikipedia",
@@ -79,7 +82,22 @@ func main() {
 				runCrawler(
 					wiki.IsValidCrawlLink,
 					wiki.AddEdgesIfDoNotExist,
-					wiki.GetRandomArticle,
+					wiki.GetRandomNode,
+					wiki.FilterPage,
+				)
+				return nil
+			},
+		},
+		{
+			Name:    "synonyms",
+			Aliases: []string{"s"},
+			Usage:   "crawl on synonyms.com",
+			Action: func(c *cli.Context) error {
+				runCrawler(
+					syn.IsValidCrawlLink,
+					syn.AddEdgesIfDoNotExist,
+					syn.GetRandomNode,
+					syn.FilterPage,
 				)
 				return nil
 			},
