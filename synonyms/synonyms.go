@@ -16,7 +16,7 @@ import (
 // globals
 var logErr = log.Errorf
 var prefix = "/synonyms/"
-var baseEndpoint = "synonyms.com"
+var baseEndpoint = "http://synonyms.com"
 var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
@@ -48,7 +48,7 @@ func GetRandomNode() (string, error) {
 	}
 	err = scanner.Err()
 	// get random index of list
-	return words[rand.Intn(len(words))], err
+	return baseEndpoint + prefix + words[rand.Intn(len(words))], err
 }
 
 // decodes and standaridizes URL
