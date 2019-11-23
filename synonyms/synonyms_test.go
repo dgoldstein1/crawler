@@ -14,21 +14,19 @@ var dbEndpoint = "http://localhost:17474"
 var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
-	t.Run("does not crawl on links with ':'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/synonyms/Category:Spinash"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonyms/Test:"), false)
+	t.Run("crawls on valid links", func(t *testing.T) {
+		assert.Equal(t, IsValidCrawlLink("/synonym/test"), true)
+		assert.Equal(t, IsValidCrawlLink("/synonym/happy"), true)
+		assert.Equal(t, IsValidCrawlLink("/synonym/cherry"), true)
 	})
-	t.Run("does not crawl on links not starting with '/synonyms/'", func(t *testing.T) {
+	t.Run("does not crawl on links with ':'", func(t *testing.T) {
+		assert.Equal(t, IsValidCrawlLink("/synonym/Category:Spinash"), false)
+		assert.Equal(t, IsValidCrawlLink("/synonym/Test:"), false)
+	})
+	t.Run("does not crawl on links not starting with '/synonym/'", func(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("https://synonymspedia.org"), false)
 		assert.Equal(t, IsValidCrawlLink("/synonyms"), false)
-		assert.Equal(t, IsValidCrawlLink("synonymspedia/synonyms/"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonyms/binary"), true)
-	})
-	t.Run("doesn't accept 'main_page'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/synonyms/Main_Page"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonyms/main_Page"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonyms/main_page"), false)
-
+		assert.Equal(t, IsValidCrawlLink("synonymspedia/synonym/"), false)
 	})
 }
 
@@ -42,17 +40,17 @@ func TestCleanURL(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name:             "removes prefixes and spaces",
-			URL:              "/synonyms/Maytag_Blue_cheese",
+			URL:              "/synonym/Maytag_Blue_cheese",
 			expectedResponse: "maytag blue cheese",
 		},
 		Test{
 			Name:             "decodes URL in string",
-			URL:              "/synonyms/ingeni%c3%b8ren",
+			URL:              "/synonym/ingeni%c3%b8ren",
 			expectedResponse: "ingeniøren",
 		},
 		Test{
 			Name:             "invalid unescape sequence",
-			URL:              "/synonyms/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
+			URL:              "/synonym/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
 			expectedResponse: "",
 		},
 	}
@@ -184,7 +182,7 @@ func TestFilterPage(t *testing.T) {
 }
 
 func TestAddEdgesIfDoNotExist(t *testing.T) {
-	node := "/synonyms/test"
+	node := "/synonym/test"
 	neighbors := []string{}
 	added, _ := AddEdgesIfDoNotExist(node, neighbors)
 	assert.Equal(t, added, []string(nil))

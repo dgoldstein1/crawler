@@ -15,17 +15,20 @@ import (
 
 // globals
 var logErr = log.Errorf
-var prefix = "/synonyms/"
+var prefix = "/synonym/"
 var baseEndpoint = "http://synonyms.com"
 var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
-	validPrefix := strings.HasPrefix(link, "/synonyms/")
-	isNotMainPage := strings.ToLower(link) != "/synonyms/main_page"
+	validPrefix := strings.HasPrefix(link, prefix)
 	noillegalChars := !strings.Contains(link, ":") && !strings.Contains(link, "#")
-	return validPrefix && isNotMainPage && noillegalChars
+	valid := validPrefix && noillegalChars
+	if !valid {
+		logErr("invalid link found %s. validPrefix : %v, noillegalChars: %v", link, validPrefix, noillegalChars)
+	}
+	return valid
 }
 
 // gets random article from a local file

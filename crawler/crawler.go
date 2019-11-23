@@ -88,10 +88,12 @@ func Crawl(
 		filteredPage.ForEach("a[href]", func(_ int, e *colly.HTMLElement) {
 			// add links which match the schema
 			link := e.Attr("href")
+			logMsg("found link %s", link)
 			if isValidCrawlLink(link) {
 				validURLs = append(validURLs, link)
 			}
 		})
+		logMsg("found %v neighbors", len(validURLs))
 		// add new nodes to current request URL
 		nodesAdded, err := addEdgesIfDoNotExist(e.Request.URL.String(), validURLs)
 		if err != nil {
