@@ -108,6 +108,20 @@ func TestRun(t *testing.T) {
 			MaxNodesAdded:    1000,
 			NewNodeRetrieved: true,
 		},
+		Test{
+			Name:             "logs error when filter page fails",
+			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
+			ConnectToDB:      func() error { return nil },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/String_cheese", nil
+			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, errors.New("BAD FILTER PAGE") },
+			MaxNodes:         100,
+			MinNodesAdded:    1,
+			MaxNodesAdded:    1000,
+			NewNodeRetrieved: false,
+		},
 	}
 
 	for _, test := range testTable {

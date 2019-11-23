@@ -2,6 +2,7 @@ package wikipedia
 
 import (
 	"fmt"
+	"github.com/gocolly/colly"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 	"strings"
@@ -118,6 +119,56 @@ func TestGetRandomNode(t *testing.T) {
 			errorsLogged = []string{}
 			timeout = time.Duration(5 * time.Second)
 			metawikiEndpoint = tempEndpointVar
+		})
+	}
+
+}
+
+func TestFilterPage(t *testing.T) {
+	type Test struct {
+		Name          string
+		ExpectedError string
+		ExpectedText  string
+		MockRequest   func(string)
+		URL           string
+	}
+
+	testTable := []Test{
+		Test{
+			Name:          "positive test",
+			ExpectedError: "",
+			ExpectedText:  "test",
+			URL:           "http://localhost:8080/html",
+			MockRequest: func(url string) {
+				httpmock.RegisterResponder("GET", url,
+					httpmock.NewStringResponder(200, `TEST`))
+			},
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			test.MockRequest(test.URL)
+			// get colly element
+			testsHaveRun := false
+			c := colly.NewCollector()
+			c.OnHTML("html", func(e *colly.HTMLElement) {
+				testsHaveRun = true
+				// run tests
+				e, err := FilterPage(e)
+				if test.ExpectedError == "" {
+					assert.Equal(t, nil, err)
+				} else {
+					assert.NotEqual(t, nil, err)
+				}
+				assert.Equal(t, test.ExpectedText, e.Text)
+			})
+			c.Visit(test.URL)
+			for !testsHaveRun {
+			}
+			assert.Equal(t, testsHaveRun, true)
 		})
 	}
 
