@@ -50,6 +50,7 @@ func runCrawler(
 	isValidCrawlLink crawler.IsValidCrawlLinkFunction,
 	addEdgeIfDoesNotExist crawler.AddEdgeFunction,
 	getNewNode crawler.GetNewNodeFunction,
+	filterPage crawler.FilterPageFunction,
 ) {
 	// assert environment
 	parseEnv()
@@ -61,6 +62,7 @@ func runCrawler(
 		db.ConnectToDB,
 		addEdgeIfDoesNotExist,
 		getNewNode,
+		filterPage,
 	)
 }
 
@@ -80,6 +82,7 @@ func main() {
 					wiki.IsValidCrawlLink,
 					wiki.AddEdgesIfDoNotExist,
 					wiki.GetRandomNode,
+					wiki.FilterPage,
 				)
 				return nil
 			},

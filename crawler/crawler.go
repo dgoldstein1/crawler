@@ -20,6 +20,7 @@ func Run(
 	connectToDB ConnectToDBFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
 	getNewNode GetNewNodeFunction,
+	filterPage FilterPageFunction,
 ) {
 	// first connect to db
 	if err := connectToDB(); err != nil {
@@ -45,6 +46,7 @@ func Run(
 		msDelay,
 		isValidCrawlLink,
 		addEdgesIfDoNotExist,
+		filterPage,
 	)
 }
 
@@ -56,6 +58,7 @@ func Crawl(
 	msDelay int,
 	isValidCrawlLink IsValidCrawlLinkFunction,
 	addEdgesIfDoNotExist AddEdgeFunction,
+	filterPage FilterPageFunction,
 ) {
 	// Instantiate default collector
 	c := colly.NewCollector(
@@ -75,9 +78,14 @@ func Crawl(
 	// On every a element which has href attribute call callback
 	c.OnHTML("html", func(e *colly.HTMLElement) {
 		logMsg("parsing %s", e.Request.URL.String())
+		// find specific portion in page, if needed
+		filteredPage, err := filterPage(e)
+		if err != nil {
+			logErr("Could not filter page %s, %v", e.Request.URL.String(), err)
+		}
 		// loop through all href attributes adding links
 		validURLs := []string{}
-		e.ForEach("a[href]", func(_ int, e *colly.HTMLElement) {
+		filteredPage.ForEach("a[href]", func(_ int, e *colly.HTMLElement) {
 			// add links which match the schema
 			link := e.Attr("href")
 			if isValidCrawlLink(link) {
@@ -95,7 +103,7 @@ func Crawl(
 		// recurse on new nodes if no stopping condition yet
 		if approximateMaxNodes == -1 || totalNodesAdded.get() < approximateMaxNodes {
 			for _, url := range nodesAdded {
-				err = e.Request.Visit(url)
+				err = filteredPage.Request.Visit(url)
 				if err != nil {
 					logWarn("Error visiting '%s', %v", url, err)
 				}
