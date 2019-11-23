@@ -79,6 +79,7 @@ func TestGetRandomNode(t *testing.T) {
 		After         func()
 	}
 
+	defaultTextDir := "english.txt"
 	testTable := []Test{
 		Test{
 			Name:          "ENGLISH_WORD_LIST_PATH not set",
@@ -87,16 +88,26 @@ func TestGetRandomNode(t *testing.T) {
 				os.Setenv("ENGLISH_WORD_LIST_PATH", "")
 			},
 			After: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "english.txt")
+				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
 			},
 		},
 		Test{
 			Name:          "gets random word succesfully",
 			ExpectedError: "",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "english.txt")
+				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
 			},
 			After: func() {},
+		},
+		Test{
+			Name:          "no such path",
+			ExpectedError: "open this/does/not/exist: no such file or directory",
+			Before: func() {
+				os.Setenv("ENGLISH_WORD_LIST_PATH", "this/does/not/exist")
+			},
+			After: func() {
+				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+			},
 		},
 	}
 
@@ -106,12 +117,12 @@ func TestGetRandomNode(t *testing.T) {
 			w, err := GetRandomNode()
 			// positive tests
 			if test.ExpectedError == "" {
-				assert.NotEqual(t, w, "")
-				assert.Equal(t, err, nil)
+				assert.NotEqual(t, "", w)
+				assert.Equal(t, nil, err)
 			} else {
-				assert.Equal(t, w, "")
-				assert.NotEqual(t, err, nil)
-				assert.Equal(t, err.Error(), test.ExpectedError)
+				assert.Equal(t, "", w)
+				assert.NotEqual(t, nil, err)
+				assert.Equal(t, test.ExpectedError, err.Error())
 			}
 			test.After()
 		})
