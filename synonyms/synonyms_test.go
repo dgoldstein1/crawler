@@ -135,18 +135,20 @@ func TestGetRandomNode(t *testing.T) {
 
 func TestFilterPage(t *testing.T) {
 	type Test struct {
-		Name          string
-		ExpectedError string
-		ExpectedText  string
-		url           string
+		Name                   string
+		ExpectedError          string
+		DOMLengthMustBeGreater int
+		DOMLengthMustBeSmaller int
+		url                    string
 	}
 
 	testTable := []Test{
 		Test{
-			Name:          "positive test",
-			ExpectedError: "",
-			ExpectedText:  "test",
-			url:           "https://www.synonyms.com/synonym/happy",
+			Name:                   "positive test",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 15,
+			url:                    "https://www.synonyms.com/synonym/happy",
 		},
 	}
 
@@ -159,8 +161,7 @@ func TestFilterPage(t *testing.T) {
 			// Load the HTML document
 			doc, _ := goquery.NewDocumentFromReader(res.Body)
 			el := colly.HTMLElement{
-				DOM:  doc.Selection,
-				Text: "test",
+				DOM: doc.Selection,
 			}
 
 			// run tests
@@ -170,7 +171,8 @@ func TestFilterPage(t *testing.T) {
 			} else {
 				assert.NotEqual(t, nil, err)
 			}
-			assert.Equal(t, test.ExpectedText, e.Text)
+			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Nodes))
+			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Nodes))
 		})
 	}
 }
