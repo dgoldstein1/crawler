@@ -171,8 +171,8 @@ func TestFilterPage(t *testing.T) {
 			} else {
 				assert.NotEqual(t, nil, err)
 			}
-			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Nodes))
-			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Nodes))
+			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
+			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
 		})
 	}
 }
