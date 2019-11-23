@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/dgoldstein1/crawler/crawler"
 	db "github.com/dgoldstein1/crawler/db"
+	syn "github.com/dgoldstein1/crawler/synonyms"
 	wiki "github.com/dgoldstein1/crawler/wikipedia"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -83,6 +84,20 @@ func main() {
 					wiki.AddEdgesIfDoNotExist,
 					wiki.GetRandomNode,
 					wiki.FilterPage,
+				)
+				return nil
+			},
+		},
+		{
+			Name:    "synonyms",
+			Aliases: []string{"s"},
+			Usage:   "crawl on synonyms.com",
+			Action: func(c *cli.Context) error {
+				runCrawler(
+					syn.IsValidCrawlLink,
+					syn.AddEdgesIfDoNotExist,
+					syn.GetRandomNode,
+					syn.FilterPage,
 				)
 				return nil
 			},
