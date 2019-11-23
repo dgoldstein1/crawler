@@ -139,6 +139,7 @@ func TestFilterPage(t *testing.T) {
 		ExpectedError          string
 		DOMLengthMustBeGreater int
 		DOMLengthMustBeSmaller int
+		Synonyms               []string
 		url                    string
 	}
 
@@ -147,8 +148,9 @@ func TestFilterPage(t *testing.T) {
 			Name:                   "positive test",
 			ExpectedError:          "",
 			DOMLengthMustBeGreater: 0,
-			DOMLengthMustBeSmaller: 15,
+			DOMLengthMustBeSmaller: 1500,
 			url:                    "https://www.synonyms.com/synonym/happy",
+			Synonyms:               []string{"felicitous", "glad", "cheerful", "elated"},
 		},
 	}
 
@@ -173,6 +175,9 @@ func TestFilterPage(t *testing.T) {
 			}
 			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
+			for _, w := range test.Synonyms {
+				assert.Contains(t, e.DOM.Text(), w)
+			}
 		})
 	}
 }
