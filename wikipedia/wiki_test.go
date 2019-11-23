@@ -129,8 +129,7 @@ func TestFilterPage(t *testing.T) {
 		Name          string
 		ExpectedError string
 		ExpectedText  string
-		MockRequest   func(string)
-		URL           string
+		el            colly.HTMLElement
 	}
 
 	testTable := []Test{
@@ -138,35 +137,22 @@ func TestFilterPage(t *testing.T) {
 			Name:          "positive test",
 			ExpectedError: "",
 			ExpectedText:  "test",
-			URL:           "http://google.com",
-			MockRequest: func(url string) {
-				httpmock.RegisterResponder("GET", url,
-					httpmock.NewStringResponder(200, "<html></html>"))
+			el: colly.HTMLElement{
+				Text: "test",
 			},
 		},
 	}
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
-			httpmock.Activate()
-			defer httpmock.DeactivateAndReset()
-			test.MockRequest(test.URL)
-			// get colly element
-			onHTMLCalled := false
-			c := colly.NewCollector()
-			c.OnHTML("html", func(r *colly.HTMLElement) {
-				onHTMLCalled = true
-				// // run tests
-				// e, err := FilterPage(e)
-				// if test.ExpectedError == "" {
-				// 	assert.Equal(t, nil, err)
-				// } else {
-				// 	assert.NotEqual(t, nil, err)
-				// }
-				// assert.Equal(t, test.ExpectedText, e.Text)
-			})
-			c.Visit(test.URL)
-			assert.Equal(t, onHTMLCalled, true)
+			// run tests
+			e, err := FilterPage(&test.el)
+			if test.ExpectedError == "" {
+				assert.Equal(t, nil, err)
+			} else {
+				assert.NotEqual(t, nil, err)
+			}
+			assert.Equal(t, test.ExpectedText, e.Text)
 		})
 	}
 
