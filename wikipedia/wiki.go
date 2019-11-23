@@ -31,7 +31,7 @@ func IsValidCrawlLink(link string) bool {
 
 // gets random article from metawiki API
 // returns article in the form "/wiki/XXXXX"
-func GetRandomArticle() (string, error) {
+func GetRandomNode() (string, error) {
 	req, _ := http.NewRequest("GET", metawikiEndpoint, nil)
 	client := http.Client{
 		Timeout: timeout,

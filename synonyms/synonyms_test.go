@@ -2,11 +2,9 @@ package synonyms
 
 import (
 	"fmt"
-	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
-	"strings"
+	"os"
 	"testing"
-	"time"
 )
 
 var dbEndpoint = "http://localhost:17474"
@@ -64,7 +62,7 @@ func TestCleanURL(t *testing.T) {
 
 }
 
-func TestGetRandomArticle(t *testing.T) {
+func TestGetRandomNode(t *testing.T) {
 	errorsLogged := []string{}
 	logErr = func(format string, args ...interface{}) {
 		if len(args) > 0 {
@@ -75,34 +73,44 @@ func TestGetRandomArticle(t *testing.T) {
 	}
 
 	type Test struct {
-		Name             string
-		MockedRequest    string
-		ExpectedResponse string
-		ExpectedError    string
+		Name          string
+		ExpectedError string
+		Before        func()
+		After         func()
 	}
 
-	testTable := []Test{}
+	testTable := []Test{
+		Test{
+			Name:          "ENGLISH_WORD_LIST_PATH not set",
+			ExpectedError: "ENGLISH_WORD_LIST_PATH was not set",
+			Before: func() {
+				os.Setenv("ENGLISH_WORD_LIST_PATH", "")
+			},
+			After: func() {
+				os.Setenv("ENGLISH_WORD_LIST_PATH", "synonyms/english.txt")
+			},
+		},
+		// Test{
+		// 	Name:             "gets random word succesfully",
+		// 	ExpectedResponse: "",
+		// 	ExpectedError:    "",
+		// },
+	}
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
-			// mock out endpoint
-			httpmock.Activate()
-			httpmock.RegisterResponder("GET", "metawikiEndpoint",
-				httpmock.NewStringResponder(200, test.MockedRequest))
-			// run test
-			a, err := GetRandomArticle()
-			assert.Equal(t, test.ExpectedResponse, a)
-			if err != nil {
-				assert.True(t, strings.Contains(err.Error(), test.ExpectedError))
-				assert.Equal(t, 1, len(errorsLogged))
+			test.Before()
+			w, err := GetRandomNode()
+			// positive tests
+			if test.ExpectedError == "" {
+				assert.NotEqual(t, w, "")
+				assert.Equal(t, err, nil)
 			} else {
-				assert.Equal(t, "", test.ExpectedError)
-				assert.Equal(t, 0, len(errorsLogged))
+				assert.Equal(t, w, "")
+				assert.NotEqual(t, err, nil)
+				assert.Equal(t, err.Error(), test.ExpectedError)
 			}
-			// reset
-			httpmock.DeactivateAndReset()
-			errorsLogged = []string{}
-			timeout = time.Duration(5 * time.Second)
+			test.After()
 		})
 	}
 

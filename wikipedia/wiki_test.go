@@ -64,7 +64,7 @@ func TestCleanURL(t *testing.T) {
 
 }
 
-func TestGetRandomArticle(t *testing.T) {
+func TestGetRandomNode(t *testing.T) {
 	errorsLogged := []string{}
 	logErr = func(format string, args ...interface{}) {
 		if len(args) > 0 {
@@ -104,7 +104,7 @@ func TestGetRandomArticle(t *testing.T) {
 					httpmock.NewStringResponder(200, test.MockedRequest))
 			}
 			// run test
-			a, err := GetRandomArticle()
+			a, err := GetRandomNode()
 			assert.Equal(t, test.ExpectedResponse, a)
 			if err != nil {
 				assert.True(t, strings.Contains(err.Error(), test.ExpectedError))

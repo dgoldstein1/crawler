@@ -79,7 +79,7 @@ func main() {
 				runCrawler(
 					wiki.IsValidCrawlLink,
 					wiki.AddEdgesIfDoNotExist,
-					wiki.GetRandomArticle,
+					wiki.GetRandomNode,
 				)
 				return nil
 			},

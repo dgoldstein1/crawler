@@ -30,7 +30,7 @@ func IsValidCrawlLink(link string) bool {
 
 // gets random article from a local file
 // returns article in the form "/synonym/XXXXX"
-func GetRandomArticle() (string, error) {
+func GetRandomNode() (string, error) {
 	path := os.Getenv("ENGLISH_WORD_LIST_PATH")
 	if path == "" {
 		return "", errors.New("ENGLISH_WORD_LIST_PATH was not set")
