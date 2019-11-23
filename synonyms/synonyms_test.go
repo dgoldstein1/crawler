@@ -2,6 +2,7 @@ package synonyms
 
 import (
 	"fmt"
+	"github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -128,6 +129,39 @@ func TestGetRandomNode(t *testing.T) {
 		})
 	}
 
+}
+
+func TestFilterPage(t *testing.T) {
+	type Test struct {
+		Name          string
+		ExpectedError string
+		ExpectedText  string
+		el            colly.HTMLElement
+	}
+
+	testTable := []Test{
+		Test{
+			Name:          "positive test",
+			ExpectedError: "",
+			ExpectedText:  "test",
+			el: colly.HTMLElement{
+				Text: "test",
+			},
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			// run tests
+			e, err := FilterPage(&test.el)
+			if test.ExpectedError == "" {
+				assert.Equal(t, nil, err)
+			} else {
+				assert.NotEqual(t, nil, err)
+			}
+			assert.Equal(t, test.ExpectedText, e.Text)
+		})
+	}
 }
 
 func TestAddEdgesIfDoNotExist(t *testing.T) {
