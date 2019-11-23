@@ -2,8 +2,10 @@ package synonyms
 
 import (
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -136,7 +138,7 @@ func TestFilterPage(t *testing.T) {
 		Name          string
 		ExpectedError string
 		ExpectedText  string
-		el            colly.HTMLElement
+		url           string
 	}
 
 	testTable := []Test{
@@ -144,16 +146,25 @@ func TestFilterPage(t *testing.T) {
 			Name:          "positive test",
 			ExpectedError: "",
 			ExpectedText:  "test",
-			el: colly.HTMLElement{
-				Text: "test",
-			},
+			url:           "https://www.synonyms.com/synonym/happy",
 		},
 	}
 
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
+			// create element
+			// Request the HTML page.
+			res, _ := http.Get(test.url)
+			defer res.Body.Close()
+			// Load the HTML document
+			doc, _ := goquery.NewDocumentFromReader(res.Body)
+			el := colly.HTMLElement{
+				DOM:  doc.Selection,
+				Text: "test",
+			}
+
 			// run tests
-			e, err := FilterPage(&test.el)
+			e, err := FilterPage(&el)
 			if test.ExpectedError == "" {
 				assert.Equal(t, nil, err)
 			} else {
