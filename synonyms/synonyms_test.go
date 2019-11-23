@@ -87,14 +87,17 @@ func TestGetRandomNode(t *testing.T) {
 				os.Setenv("ENGLISH_WORD_LIST_PATH", "")
 			},
 			After: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "synonyms/english.txt")
+				os.Setenv("ENGLISH_WORD_LIST_PATH", "english.txt")
 			},
 		},
-		// Test{
-		// 	Name:             "gets random word succesfully",
-		// 	ExpectedResponse: "",
-		// 	ExpectedError:    "",
-		// },
+		Test{
+			Name:          "gets random word succesfully",
+			ExpectedError: "",
+			Before: func() {
+				os.Setenv("ENGLISH_WORD_LIST_PATH", "english.txt")
+			},
+			After: func() {},
+		},
 	}
 
 	for _, test := range testTable {
