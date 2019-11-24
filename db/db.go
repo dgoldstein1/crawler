@@ -134,7 +134,7 @@ func AddEdgesIfDoNotExist(
 		neighborNodes[i] = cleanUrl(n)
 		nodes[cleanUrl(n)] = n
 	}
-	twoWayResp, err := GetArticleIds(append(neighborNodes, cleanUrl(currentNode)))
+	twoWayResp, err := GetArticleIds(append(neighborNodes, currentNode))
 	if err != nil {
 		logErr("Could not get neighbor Ids %v", err)
 		return neighborsAdded, err

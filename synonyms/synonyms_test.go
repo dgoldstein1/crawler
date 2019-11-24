@@ -53,6 +53,11 @@ func TestCleanURL(t *testing.T) {
 			URL:              "/synonym/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
 			expectedResponse: "",
 		},
+		Test{
+			Name:             "removes 'https' with base endpoint as well",
+			URL:              "https://www.synonyms.com/synonym/perception",
+			expectedResponse: "perception",
+		},
 	}
 
 	for _, test := range testTable {

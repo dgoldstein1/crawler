@@ -16,7 +16,7 @@ import (
 // globals
 var logErr = log.Errorf
 var prefix = "/synonym/"
-var baseEndpoint = "http://synonyms.com"
+var baseEndpoint = "http://www.synonyms.com"
 var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
@@ -58,6 +58,9 @@ func GetRandomNode() (string, error) {
 func CleanUrl(link string) string {
 	// trim current node if needed
 	link = strings.TrimPrefix(link, baseEndpoint)
+	// also replace 'https'-- synonyms.com upgrades connection
+	httpsPrefix := strings.ReplaceAll(baseEndpoint, "http", "https")
+	link = strings.TrimPrefix(link, httpsPrefix)
 	link = strings.TrimPrefix(link, prefix)
 	link = strings.ToLower(link)
 	link = strings.ReplaceAll(link, "_", " ")
