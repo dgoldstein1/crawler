@@ -1,4 +1,4 @@
-package synonyms
+package ar_synonyms
 
 import (
 	"fmt"
@@ -85,23 +85,23 @@ func TestGetRandomNode(t *testing.T) {
 		After         func()
 	}
 
-	defaultTextDir := "english.txt"
+	defaultTextDir := "arabic.txt"
 	testTable := []Test{
 		Test{
-			Name:          "ENGLISH_WORD_LIST_PATH not set",
-			ExpectedError: "ENGLISH_WORD_LIST_PATH was not set",
+			Name:          "ARABIC_WORD_LIST_PATH not set",
+			ExpectedError: "ARABIC_WORD_LIST_PATH was not set",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "")
+				os.Setenv("ARABIC_WORD_LIST_PATH", "")
 			},
 			After: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
 		},
 		Test{
 			Name:          "gets random word succesfully",
 			ExpectedError: "",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
 			After: func() {},
 		},
@@ -109,10 +109,10 @@ func TestGetRandomNode(t *testing.T) {
 			Name:          "no such path",
 			ExpectedError: "open this/does/not/exist: no such file or directory",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "this/does/not/exist")
+				os.Setenv("ARABIC_WORD_LIST_PATH", "this/does/not/exist")
 			},
 			After: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
 		},
 	}
