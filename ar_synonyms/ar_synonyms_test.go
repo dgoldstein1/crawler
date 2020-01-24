@@ -6,7 +6,7 @@ import (
 	// "github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
 	// "net/http"
-	// "os"
+	"os"
 	"testing"
 )
 
@@ -30,43 +30,43 @@ func TestIsValidCrawlLink(t *testing.T) {
 	})
 }
 
-// func TestCleanURL(t *testing.T) {
-// 	type Test struct {
-// 		Name             string
-// 		URL              string
-// 		expectedResponse string
-// 	}
+func TestCleanURL(t *testing.T) {
+	type Test struct {
+		Name             string
+		URL              string
+		expectedResponse string
+	}
 
-// 	testTable := []Test{
-// 		Test{
-// 			Name:             "removes prefixes and spaces",
-// 			URL:              "/synonym/ar/Maytag_Blue_cheese",
-// 			expectedResponse: "maytag blue cheese",
-// 		},
-// 		Test{
-// 			Name:             "decodes URL in string",
-// 			URL:              "/synonym/ar/ingeni%c3%b8ren",
-// 			expectedResponse: "ingeniøren",
-// 		},
-// 		Test{
-// 			Name:             "invalid unescape sequence",
-// 			URL:              "/synonym/ar/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
-// 			expectedResponse: "",
-// 		},
-// 		Test{
-// 			Name:             "removes 'https' with base endpoint as well",
-// 			URL:              "https://www.synonyms.com/synonym/ar/perception",
-// 			expectedResponse: "perception",
-// 		},
-// 	}
+	testTable := []Test{
+		Test{
+			Name:             "removes prefixes and spaces",
+			URL:              "/synonym/ar/%D8%AD%D9%8A%D9%86",
+			expectedResponse: "حين",
+		},
+		Test{
+			Name:             "decodes URL in string",
+			URL:              "/synonym/ar/ingeni%c3%b8ren",
+			expectedResponse: "ingeniøren",
+		},
+		Test{
+			Name:             "invalid unescape sequence",
+			URL:              "/synonym/ar/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
+			expectedResponse: "",
+		},
+		Test{
+			Name:             "removes 'https' with base endpoint as well",
+			URL:              "https://synonyms.reverso.net/synonym/ar/موسم",
+			expectedResponse: "موسم",
+		},
+	}
 
-// 	for _, test := range testTable {
-// 		t.Run(test.Name, func(t *testing.T) {
-// 			assert.Equal(t, CleanUrl(test.URL), test.expectedResponse)
-// 		})
-// 	}
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			assert.Equal(t, CleanUrl(test.URL), test.expectedResponse)
+		})
+	}
 
-// }
+}
 
 func TestGetRandomNode(t *testing.T) {
 	errorsLogged := []string{}
@@ -77,65 +77,64 @@ func TestGetRandomNode(t *testing.T) {
 			errorsLogged = append(errorsLogged, format)
 		}
 	}
+
+	type Test struct {
+		Name          string
+		ExpectedError string
+		Before        func()
+		After         func()
+	}
+
+	defaultTextDir := "arabic.txt"
+	testTable := []Test{
+		Test{
+			Name:          "ARABIC_WORD_LIST_PATH not set",
+			ExpectedError: "ARABIC_WORD_LIST_PATH was not set",
+			Before: func() {
+				os.Setenv("ARABIC_WORD_LIST_PATH", "")
+			},
+			After: func() {
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
+			},
+		},
+		Test{
+			Name:          "gets random word succesfully",
+			ExpectedError: "",
+			Before: func() {
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
+			},
+			After: func() {},
+		},
+		Test{
+			Name:          "no such path",
+			ExpectedError: "open this/does/not/exist: no such file or directory",
+			Before: func() {
+				os.Setenv("ARABIC_WORD_LIST_PATH", "this/does/not/exist")
+			},
+			After: func() {
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
+			},
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Before()
+			w, err := GetRandomNode()
+			// positive tests
+			if test.ExpectedError == "" {
+				assert.NotEqual(t, "", w)
+				assert.Equal(t, nil, err)
+			} else {
+				assert.Equal(t, "", w)
+				assert.NotEqual(t, nil, err)
+				assert.Equal(t, test.ExpectedError, err.Error())
+			}
+			test.After()
+		})
+	}
+
 }
-
-// 	type Test struct {
-// 		Name          string
-// 		ExpectedError string
-// 		Before        func()
-// 		After         func()
-// 	}
-
-// 	defaultTextDir := "arabic.txt"
-// 	testTable := []Test{
-// 		Test{
-// 			Name:          "ARABIC_WORD_LIST_PATH not set",
-// 			ExpectedError: "ARABIC_WORD_LIST_PATH was not set",
-// 			Before: func() {
-// 				os.Setenv("ARABIC_WORD_LIST_PATH", "")
-// 			},
-// 			After: func() {
-// 				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
-// 			},
-// 		},
-// 		Test{
-// 			Name:          "gets random word succesfully",
-// 			ExpectedError: "",
-// 			Before: func() {
-// 				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
-// 			},
-// 			After: func() {},
-// 		},
-// 		Test{
-// 			Name:          "no such path",
-// 			ExpectedError: "open this/does/not/exist: no such file or directory",
-// 			Before: func() {
-// 				os.Setenv("ARABIC_WORD_LIST_PATH", "this/does/not/exist")
-// 			},
-// 			After: func() {
-// 				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
-// 			},
-// 		},
-// 	}
-
-// 	for _, test := range testTable {
-// 		t.Run(test.Name, func(t *testing.T) {
-// 			test.Before()
-// 			w, err := GetRandomNode()
-// 			// positive tests
-// 			if test.ExpectedError == "" {
-// 				assert.NotEqual(t, "", w)
-// 				assert.Equal(t, nil, err)
-// 			} else {
-// 				assert.Equal(t, "", w)
-// 				assert.NotEqual(t, nil, err)
-// 				assert.Equal(t, test.ExpectedError, err.Error())
-// 			}
-// 			test.After()
-// 		})
-// 	}
-
-// }
 
 // func TestFilterPage(t *testing.T) {
 // 	type Test struct {

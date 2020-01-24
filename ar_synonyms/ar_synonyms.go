@@ -32,7 +32,7 @@ func IsValidCrawlLink(link string) bool {
 }
 
 // gets random article from a local file
-// returns article in the form "/synonym/XXXXX"
+// returns article in the form "/synonym/ar/XXXXX"
 func GetRandomNode() (string, error) {
 	path := os.Getenv("ARABIC_WORD_LIST_PATH")
 	if path == "" {
