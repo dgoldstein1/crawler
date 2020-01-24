@@ -2,10 +2,10 @@ package ar_synonyms
 
 import (
 	"fmt"
-	// "github.com/PuerkitoBio/goquery"
-	// "github.com/gocolly/colly"
+	"github.com/PuerkitoBio/goquery"
+	"github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
-	// "net/http"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -136,55 +136,58 @@ func TestGetRandomNode(t *testing.T) {
 
 }
 
-// func TestFilterPage(t *testing.T) {
-// 	type Test struct {
-// 		Name                   string
-// 		ExpectedError          string
-// 		DOMLengthMustBeGreater int
-// 		DOMLengthMustBeSmaller int
-// 		Synonyms               []string
-// 		url                    string
-// 	}
+func TestFilterPage(t *testing.T) {
+	type Test struct {
+		Name                   string
+		ExpectedError          string
+		DOMLengthMustBeGreater int
+		DOMLengthMustBeSmaller int
+		Synonyms               []string
+		url                    string
+	}
 
-// 	testTable := []Test{
-// 		Test{
-// 			Name:                   "positive test",
-// 			ExpectedError:          "",
-// 			DOMLengthMustBeGreater: 0,
-// 			DOMLengthMustBeSmaller: 2000,
-// 			url:                    "https://www.synonyms.com/synonym/ar/happy",
-// 			Synonyms:               []string{"felicitous", "glad", "cheerful", "elated"},
-// 		},
-// 	}
+	testTable := []Test{
+		Test{
+			Name:                   "positive test",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://synonyms.reverso.net/synonym/ar/%D8%AF%D9%88%D8%B1",
+			Synonyms:               []string{"مرحلة"}, // []string{"مرحلة", "فترة", "وقت", "عصر"},
+		},
+	}
 
-// 	for _, test := range testTable {
-// 		t.Run(test.Name, func(t *testing.T) {
-// 			// create element
-// 			// Request the HTML page.
-// 			res, _ := http.Get(test.url)
-// 			defer res.Body.Close()
-// 			// Load the HTML document
-// 			doc, _ := goquery.NewDocumentFromReader(res.Body)
-// 			el := colly.HTMLElement{
-// 				DOM: doc.Selection,
-// 			}
-
-// 			// run tests
-// 			e, err := FilterPage(&el)
-// 			if test.ExpectedError == "" {
-// 				assert.Equal(t, nil, err)
-// 			} else {
-// 				assert.NotEqual(t, nil, err)
-// 			}
-// 			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
-// 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
-// 			// make sure there are href links
-// 			for _, w := range test.Synonyms {
-// 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
-// 			}
-// 		})
-// 	}
-// }
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			// create element
+			// Request the HTML page.
+			client := &http.Client{}
+			req, err := http.NewRequest("GET", test.url, nil)
+			// need
+			req.Header.Add("User-Agent", `Dgoldstein1/crawler`)
+			res, _ := client.Do(req)
+			defer res.Body.Close()
+			// Load the HTML document
+			doc, _ := goquery.NewDocumentFromReader(res.Body)
+			el := colly.HTMLElement{
+				DOM: doc.Selection,
+			}
+			// run tests
+			e, err := FilterPage(&el)
+			if test.ExpectedError == "" {
+				assert.Equal(t, nil, err)
+			} else {
+				assert.NotEqual(t, nil, err)
+			}
+			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
+			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
+			// make sure there are href links
+			for _, w := range test.Synonyms {
+				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
+			}
+		})
+	}
+}
 
 func TestAddEdgesIfDoNotExist(t *testing.T) {
 	node := "/synonym/ar/test"

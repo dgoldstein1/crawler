@@ -74,7 +74,7 @@ func CleanUrl(link string) string {
 
 // filters down full page body to elements we want to focus on
 func FilterPage(e *colly.HTMLElement) (*colly.HTMLElement, error) {
-	e.DOM = e.DOM.Find(".syns")
+	e.DOM = e.DOM.Find(".word-opt")
 	return e, nil
 }
 
