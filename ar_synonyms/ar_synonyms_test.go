@@ -28,6 +28,9 @@ func TestIsValidCrawlLink(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("/synonyms"), false)
 		assert.Equal(t, IsValidCrawlLink("synonymspedia/synonym/ar/"), false)
 	})
+	t.Run("special use case `https://context.reverso.net/translation/`", func(t *testing.T) {
+		assert.Equal(t, IsValidCrawlLink("https://synonyms.reverso.net/synonym/ar/%D9%86%D9%8A%D8%B3%D8%A7%D9%86"), false)
+	})
 }
 
 func TestCleanURL(t *testing.T) {

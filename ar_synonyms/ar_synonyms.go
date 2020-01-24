@@ -22,6 +22,10 @@ var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
+	// sometimes tries to give translation link, don't throw error or else gets too verbose
+	if strings.HasPrefix(link, "https://context.reverso.net/translation/") {
+		return false
+	}
 	validPrefix := strings.HasPrefix(link, prefix)
 	noillegalChars := !strings.Contains(link, ":") && !strings.Contains(link, "#")
 	valid := validPrefix && noillegalChars
