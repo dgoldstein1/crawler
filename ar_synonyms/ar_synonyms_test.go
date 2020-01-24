@@ -1,4 +1,4 @@
-package synonyms
+package ar_synonyms
 
 import (
 	"fmt"
@@ -15,18 +15,21 @@ var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
 	t.Run("crawls on valid links", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/synonym/test"), true)
-		assert.Equal(t, IsValidCrawlLink("/synonym/happy"), true)
-		assert.Equal(t, IsValidCrawlLink("/synonym/cherry"), true)
+		assert.Equal(t, IsValidCrawlLink("/synonym/ar/test"), true)
+		assert.Equal(t, IsValidCrawlLink("/synonym/ar/happy"), true)
+		assert.Equal(t, IsValidCrawlLink("/synonym/ar/cherry"), true)
 	})
 	t.Run("does not crawl on links with ':'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/synonym/Category:Spinash"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonym/Test:"), false)
+		assert.Equal(t, IsValidCrawlLink("/synonym/ar/Category:Spinash"), false)
+		assert.Equal(t, IsValidCrawlLink("/synonym/ar/Test:"), false)
 	})
-	t.Run("does not crawl on links not starting with '/synonym/'", func(t *testing.T) {
+	t.Run("does not crawl on links not starting with '/synonym/ar/'", func(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("https://synonymspedia.org"), false)
 		assert.Equal(t, IsValidCrawlLink("/synonyms"), false)
-		assert.Equal(t, IsValidCrawlLink("synonymspedia/synonym/"), false)
+		assert.Equal(t, IsValidCrawlLink("synonymspedia/synonym/ar/"), false)
+	})
+	t.Run("special use case `https://context.reverso.net/translation/`", func(t *testing.T) {
+		assert.Equal(t, IsValidCrawlLink("https://synonyms.reverso.net/synonym/ar/%D9%86%D9%8A%D8%B3%D8%A7%D9%86"), false)
 	})
 }
 
@@ -40,23 +43,23 @@ func TestCleanURL(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name:             "removes prefixes and spaces",
-			URL:              "/synonym/Maytag_Blue_cheese",
-			expectedResponse: "maytag blue cheese",
+			URL:              "/synonym/ar/%D8%AD%D9%8A%D9%86",
+			expectedResponse: "حين",
 		},
 		Test{
 			Name:             "decodes URL in string",
-			URL:              "/synonym/ingeni%c3%b8ren",
+			URL:              "/synonym/ar/ingeni%c3%b8ren",
 			expectedResponse: "ingeniøren",
 		},
 		Test{
 			Name:             "invalid unescape sequence",
-			URL:              "/synonym/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
+			URL:              "/synonym/ar/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
 			expectedResponse: "",
 		},
 		Test{
 			Name:             "removes 'https' with base endpoint as well",
-			URL:              "https://www.synonyms.com/synonym/perception",
-			expectedResponse: "perception",
+			URL:              "https://synonyms.reverso.net/synonym/ar/موسم",
+			expectedResponse: "موسم",
 		},
 	}
 
@@ -85,23 +88,23 @@ func TestGetRandomNode(t *testing.T) {
 		After         func()
 	}
 
-	defaultTextDir := "english.txt"
+	defaultTextDir := "arabic.txt"
 	testTable := []Test{
 		Test{
-			Name:          "ENGLISH_WORD_LIST_PATH not set",
-			ExpectedError: "ENGLISH_WORD_LIST_PATH was not set",
+			Name:          "ARABIC_WORD_LIST_PATH not set",
+			ExpectedError: "ARABIC_WORD_LIST_PATH was not set",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "")
+				os.Setenv("ARABIC_WORD_LIST_PATH", "")
 			},
 			After: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
 		},
 		Test{
 			Name:          "gets random word succesfully",
 			ExpectedError: "",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
 			After: func() {},
 		},
@@ -109,10 +112,10 @@ func TestGetRandomNode(t *testing.T) {
 			Name:          "no such path",
 			ExpectedError: "open this/does/not/exist: no such file or directory",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", "this/does/not/exist")
+				os.Setenv("ARABIC_WORD_LIST_PATH", "this/does/not/exist")
 			},
 			After: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
 		},
 	}
@@ -151,9 +154,9 @@ func TestFilterPage(t *testing.T) {
 			Name:                   "positive test",
 			ExpectedError:          "",
 			DOMLengthMustBeGreater: 0,
-			DOMLengthMustBeSmaller: 2000,
-			url:                    "https://www.synonyms.com/synonym/happy",
-			Synonyms:               []string{"felicitous", "glad", "cheerful", "elated"},
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://synonyms.reverso.net/synonym/ar/%D8%AF%D9%88%D8%B1",
+			Synonyms:               []string{"مرحلة"}, // []string{"مرحلة", "فترة", "وقت", "عصر"},
 		},
 	}
 
@@ -161,14 +164,17 @@ func TestFilterPage(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			// create element
 			// Request the HTML page.
-			res, _ := http.Get(test.url)
+			client := &http.Client{}
+			req, err := http.NewRequest("GET", test.url, nil)
+			// need
+			req.Header.Add("User-Agent", `Dgoldstein1/crawler`)
+			res, _ := client.Do(req)
 			defer res.Body.Close()
 			// Load the HTML document
 			doc, _ := goquery.NewDocumentFromReader(res.Body)
 			el := colly.HTMLElement{
 				DOM: doc.Selection,
 			}
-
 			// run tests
 			e, err := FilterPage(&el)
 			if test.ExpectedError == "" {
@@ -187,7 +193,7 @@ func TestFilterPage(t *testing.T) {
 }
 
 func TestAddEdgesIfDoNotExist(t *testing.T) {
-	node := "/synonym/test"
+	node := "/synonym/ar/test"
 	neighbors := []string{}
 	added, _ := AddEdgesIfDoNotExist(node, neighbors)
 	assert.Equal(t, added, []string(nil))
