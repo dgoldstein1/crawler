@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/dgoldstein1/crawler/ar_synonyms"
 	"github.com/dgoldstein1/crawler/crawler"
 	db "github.com/dgoldstein1/crawler/db"
 	syn "github.com/dgoldstein1/crawler/synonyms"
@@ -98,6 +99,20 @@ func main() {
 					syn.AddEdgesIfDoNotExist,
 					syn.GetRandomNode,
 					syn.FilterPage,
+				)
+				return nil
+			},
+		},
+		{
+			Name:    "synonyms-ar",
+			Aliases: []string{"ar"},
+			Usage:   "crawl on https://synonyms.reverso.net/synonym/ar/",
+			Action: func(c *cli.Context) error {
+				runCrawler(
+					ar_synonyms.IsValidCrawlLink,
+					ar_synonyms.AddEdgesIfDoNotExist,
+					ar_synonyms.GetRandomNode,
+					ar_synonyms.FilterPage,
 				)
 				return nil
 			},
