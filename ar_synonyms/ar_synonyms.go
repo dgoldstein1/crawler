@@ -15,8 +15,8 @@ import (
 
 // globals
 var logErr = log.Errorf
-var prefix = "/synonym/"
-var baseEndpoint = "http://www.synonyms.com"
+var prefix = "/synonym/ar/"
+var baseEndpoint = "https://synonyms.reverso.net"
 var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
