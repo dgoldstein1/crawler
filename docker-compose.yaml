@@ -30,7 +30,7 @@ services:
       - 5001:5001
 
   graph:
-    image: dgoldstein1/biggraph:0.1.5
+    image: dgoldstein1/biggraph:latest
     ports:
       - 5000:5000
       - 8001:8001

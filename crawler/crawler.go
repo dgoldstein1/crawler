@@ -101,13 +101,16 @@ func Crawl(
 			// update metrics
 			UpdateMetrics(len(nodesAdded), e.Request.Depth)
 		}
+		// stopping condition
+		if approximateMaxNodes != -1 && (totalNodesAdded.get() >= approximateMaxNodes) {
+			logMsg("Stopping condition: %v nodes added >= %v approximateMaxNodes", totalNodesAdded.get(), approximateMaxNodes)
+			return
+		}
 		// recurse on new nodes if no stopping condition yet
-		if approximateMaxNodes == -1 || totalNodesAdded.get() < approximateMaxNodes {
-			for _, url := range nodesAdded {
-				err = filteredPage.Request.Visit(url)
-				if err != nil {
-					logWarn("Error visiting '%s', %v", url, err)
-				}
+		for _, url := range nodesAdded {
+			err = filteredPage.Request.Visit(url)
+			if err != nil {
+				logWarn("Error visiting '%s', %v", url, err)
 			}
 		}
 	})
