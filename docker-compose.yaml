@@ -5,19 +5,19 @@ services:
   ## Crawlers ##
   ##############
 
-  # crawler:
-  #   image: dgoldstein1/crawler:latest
-  #   depends_on:
-  #     - kv
-  #     - graph
-  #   environment:
-  #     - GRAPH_DB_ENDPOINT=http://graph:5000
-  #     - TWO_WAY_KV_ENDPOINT=http://kv:5001
-  #     - MAX_APPROX_NODES=100
-  #     - COMMAND=wikipedia
-  #     - METRICS_PORT=8001
-  #     - PARALLELISM=16
-  #     - MS_DELAY=5
+  crawler:
+    image: dgoldstein1/crawler:latest
+    depends_on:
+      - kv
+      - graph
+    environment:
+      - GRAPH_DB_ENDPOINT=http://graph:5000
+      - TWO_WAY_KV_ENDPOINT=http://kv:5001
+      - MAX_APPROX_NODES=1000
+      - COMMAND=ar
+      - METRICS_PORT=8001
+      - PARALLELISM=1
+      - MS_DELAY=220
 
 
   ##############
@@ -30,7 +30,7 @@ services:
       - 5001:5001
 
   graph:
-    image: dgoldstein1/biggraph:0.1.5
+    image: dgoldstein1/biggraph:latest
     ports:
       - 5000:5000
       - 8001:8001

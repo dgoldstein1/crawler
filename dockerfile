@@ -14,5 +14,8 @@ COPY ar_synonyms/arabic.txt /arabic.txt
 ENV ARABIC_WORD_LIST_PATH /arabic.txt
 
 
+COPY LICENSE /LICENSE
+COPY VERSION /VERSION
+
 ENV COMMAND "--help"
 CMD crawler $COMMAND

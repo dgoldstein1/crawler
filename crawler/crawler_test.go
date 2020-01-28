@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
+	"math/rand"
 	"os"
 	"strings"
 	"testing"
@@ -62,6 +63,20 @@ func TestRun(t *testing.T) {
 			},
 			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
 			MaxNodes:         100,
+			MinNodesAdded:    1,
+			MaxNodesAdded:    1000,
+			NewNodeRetrieved: false,
+		},
+		Test{
+			Name:             "reaches stopping condition",
+			StartingEndpoint: "https://en.wikipedia.org/wiki/String_cheese",
+			ConnectToDB:      func() error { return nil },
+			GetNewNode: func() (string, error) {
+				newNodeRetrieved = true
+				return "https://en.wikipedia.org/wiki/" + fmt.Sprintf("%v", rand.Intn(1000000)), nil
+			},
+			FilterPage:       func(e *colly.HTMLElement) (*colly.HTMLElement, error) { return e, nil },
+			MaxNodes:         10,
 			MinNodesAdded:    1,
 			MaxNodesAdded:    1000,
 			NewNodeRetrieved: false,
@@ -138,15 +153,19 @@ func TestRun(t *testing.T) {
 				test.FilterPage,
 			)
 			// make assertions
-			if test.Name != "cannot connect to DB" && test.Name != "fails when cannot fetch new node" {
+			if test.Name == "reaches stopping condition" {
+				assert.Greater(t, len(nodesAdded), test.MinNodesAdded)
+				assert.Less(t, len(nodesAdded), test.MaxNodesAdded)
+			} else if test.Name == "cannot connect to DB" || test.Name == "fails when cannot fetch new node" {
+				assert.Equal(t, 1, len(logs))
+			} else {
 				assert.True(t, test.MinNodesAdded <= len(nodesAdded))
 				assert.True(t, test.MaxNodesAdded >= len(nodesAdded))
 				assert.Equal(t, test.NewNodeRetrieved, newNodeRetrieved)
 				assert.Equal(t, 0, len(logs))
-			} else {
-				assert.Equal(t, 1, len(logs))
 			}
 			// reset everything
+
 			newNodeRetrieved = false
 			nodesAdded = []string{}
 			logs = []string{}
