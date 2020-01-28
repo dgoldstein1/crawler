@@ -103,7 +103,8 @@ func Crawl(
 		}
 		// stopping condition
 		if approximateMaxNodes != -1 && (totalNodesAdded.get() >= approximateMaxNodes) {
-			logMsg("Stopping condition: %v nodes added >= %v approximateMaxNodes", totalNodesAdded.get(), approximateMaxNodes)
+			logMsg("Stopping condition reached: %v nodes added >= %v approximateMaxNodes", totalNodesAdded.get(), approximateMaxNodes)
+			os.Exit(0)
 			return
 		}
 		// recurse on new nodes if no stopping condition yet
