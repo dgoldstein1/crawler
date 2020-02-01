@@ -6,8 +6,6 @@ import (
 	"github.com/dgoldstein1/crawler/wikipedia"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
-	"net/url"
-	"strings"
 	"time"
 )
 
@@ -32,20 +30,7 @@ func GetRandomNode() (string, error) {
 
 // decodes and standaridizes URL
 func CleanUrl(link string) string {
-	// trim current node if needed
-	link = strings.TrimPrefix(link, baseEndpoint)
-	// also replace 'https'-- synonyms.com upgrades connection
-	httpsPrefix := strings.ReplaceAll(baseEndpoint, "http", "https")
-	link = strings.TrimPrefix(link, httpsPrefix)
-	link = strings.TrimPrefix(link, prefix)
-	link = strings.ToLower(link)
-	link = strings.ReplaceAll(link, "_", " ")
-	// decode string
-	link, err := url.QueryUnescape(link)
-	if err != nil {
-		logErr("Could not decode string %s: %v", link, err)
-	}
-	return link
+	return wikipedia.CleanUrl(link)
 }
 
 // filters down full page body to elements we want to focus on

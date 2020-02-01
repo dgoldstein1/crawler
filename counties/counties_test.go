@@ -92,23 +92,8 @@ func TestCleanURL(t *testing.T) {
 	testTable := []Test{
 		Test{
 			Name:             "removes prefixes and spaces",
-			URL:              "/synonym/ar/%D8%AD%D9%8A%D9%86",
-			expectedResponse: "حين",
-		},
-		Test{
-			Name:             "decodes URL in string",
-			URL:              "/synonym/ar/ingeni%c3%b8ren",
-			expectedResponse: "ingeniøren",
-		},
-		Test{
-			Name:             "invalid unescape sequence",
-			URL:              "/synonym/ar/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
-			expectedResponse: "",
-		},
-		Test{
-			Name:             "removes 'https' with base endpoint as well",
-			URL:              "https://synonyms.reverso.net/synonym/ar/موسم",
-			expectedResponse: "موسم",
+			URL:              "/wiki/Maytag_Blue_cheese",
+			expectedResponse: "maytag blue cheese",
 		},
 	}
 
