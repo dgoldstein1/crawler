@@ -1,10 +1,12 @@
 package ar_synonyms
 
 import (
+	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -28,6 +30,56 @@ func TestIsValidCrawlLink(t *testing.T) {
 		assert.Equal(t, IsValidCrawlLink("/wiki/main_page"), false)
 
 	})
+}
+
+func TestGetRandomNode(t *testing.T) {
+	errorsLogged := []string{}
+	logErr = func(format string, args ...interface{}) {
+		if len(args) > 0 {
+			errorsLogged = append(errorsLogged, fmt.Sprintf(format, args))
+		} else {
+			errorsLogged = append(errorsLogged, format)
+		}
+	}
+
+	type Test struct {
+		Name          string
+		ExpectedError string
+		Before        func()
+		After         func()
+	}
+
+	defaultTextDir := "counties.txt"
+	testTable := []Test{
+		Test{
+			Name:          "COUNTIES_LIST not set",
+			ExpectedError: "COUNTIES_LIST was not set",
+			Before: func() {
+				os.Setenv("COUNTIES_LIST", "")
+			},
+			After: func() {
+				os.Setenv("COUNTIES_LIST", defaultTextDir)
+			},
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			test.Before()
+			w, err := GetRandomNode()
+			// positive tests
+			if test.ExpectedError == "" {
+				assert.NotEqual(t, "", w)
+				assert.Equal(t, nil, err)
+			} else {
+				assert.Equal(t, "", w)
+				assert.NotEqual(t, nil, err)
+				assert.Equal(t, test.ExpectedError, err.Error())
+			}
+			test.After()
+		})
+	}
+
 }
 
 func TestCleanURL(t *testing.T) {
