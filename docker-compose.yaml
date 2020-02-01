@@ -14,7 +14,7 @@ services:
       - GRAPH_DB_ENDPOINT=http://graph:5000
       - TWO_WAY_KV_ENDPOINT=http://kv:5001
       - MAX_APPROX_NODES=1000
-      - COMMAND=ar
+      - COMMAND=counties
       - METRICS_PORT=8001
       - PARALLELISM=1
       - MS_DELAY=220

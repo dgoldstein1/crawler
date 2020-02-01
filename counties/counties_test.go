@@ -1,4 +1,4 @@
-package synonyms
+package counties
 
 import (
 	"fmt"
@@ -14,58 +14,25 @@ var dbEndpoint = "http://localhost:17474"
 var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
-	t.Run("crawls on valid links", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/synonym/test"), true)
-		assert.Equal(t, IsValidCrawlLink("/synonym/happy"), true)
-		assert.Equal(t, IsValidCrawlLink("/synonym/cherry"), true)
-	})
-	t.Run("does not crawl on links with ':'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/synonym/Category:Spinash"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonym/Test:"), false)
-	})
-	t.Run("does not crawl on links not starting with '/synonym/'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("https://synonymspedia.org"), false)
-		assert.Equal(t, IsValidCrawlLink("/synonyms"), false)
-		assert.Equal(t, IsValidCrawlLink("synonymspedia/synonym/"), false)
-	})
-}
-
-func TestCleanURL(t *testing.T) {
-	type Test struct {
-		Name             string
-		URL              string
-		expectedResponse string
+	testTable := []struct {
+		name              string
+		input             string
+		expectedToBeValid bool
+	}{
+		{"positive test", "/wiki/Albemarle_County,_Virginia", true},
+		{"positive test (2)", "/wiki/Miami-Dade_County,_Florida", true},
+		{"positive test (2)", "/wiki/Dakota_County,_Minnesota", true},
+		{"incorrect county format (1)", "/wiki/Albemarle_County,XX_Virginia", false},
+		{"incorrect county format (2)", "/wiki/AlbemarleXXounty,_Virginia", false},
+		{"town in county", "/wiki/Oak_Ridge,_Nelson_County,_Virginia", false},
+		{"national registry of historic places", "/wiki/National_Register_of_Historic_Places_listings_in_Clarke_County,_Virginia ", false},
+		{"incorrect prefix", "/wiki_test/Albemarle_County,_Virginia", false},
 	}
-
-	testTable := []Test{
-		Test{
-			Name:             "removes prefixes and spaces",
-			URL:              "/synonym/Maytag_Blue_cheese",
-			expectedResponse: "maytag blue cheese",
-		},
-		Test{
-			Name:             "decodes URL in string",
-			URL:              "/synonym/ingeni%c3%b8ren",
-			expectedResponse: "ingeniøren",
-		},
-		Test{
-			Name:             "invalid unescape sequence",
-			URL:              "/synonym/^#$%#$G#$(JG#($JG(DFS(J#(JF%23423",
-			expectedResponse: "",
-		},
-		Test{
-			Name:             "removes 'https' with base endpoint as well",
-			URL:              "https://www.synonyms.com/synonym/perception",
-			expectedResponse: "perception",
-		},
-	}
-
 	for _, test := range testTable {
-		t.Run(test.Name, func(t *testing.T) {
-			assert.Equal(t, CleanUrl(test.URL), test.expectedResponse)
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expectedToBeValid, IsValidCrawlLink(test.input))
 		})
 	}
-
 }
 
 func TestGetRandomNode(t *testing.T) {
@@ -85,15 +52,17 @@ func TestGetRandomNode(t *testing.T) {
 		After         func()
 	}
 
-	defaultTextDir := "english.txt"
+	defaultTextDir := "counties.txt"
 	testTable := []Test{
 		Test{
-			Name:          "gets random word succesfully",
-			ExpectedError: "",
+			Name:          "COUNTIES_LIST not set",
+			ExpectedError: "COUNTIES_LIST was not set",
 			Before: func() {
-				os.Setenv("ENGLISH_WORD_LIST_PATH", defaultTextDir)
+				os.Setenv("COUNTIES_LIST", "")
 			},
-			After: func() {},
+			After: func() {
+				os.Setenv("COUNTIES_LIST", defaultTextDir)
+			},
 		},
 	}
 
@@ -116,6 +85,29 @@ func TestGetRandomNode(t *testing.T) {
 
 }
 
+func TestCleanURL(t *testing.T) {
+	type Test struct {
+		Name             string
+		URL              string
+		expectedResponse string
+	}
+
+	testTable := []Test{
+		Test{
+			Name:             "removes prefixes and spaces",
+			URL:              "/wiki/Maytag_Blue_cheese",
+			expectedResponse: "maytag blue cheese",
+		},
+	}
+
+	for _, test := range testTable {
+		t.Run(test.Name, func(t *testing.T) {
+			assert.Equal(t, CleanUrl(test.URL), test.expectedResponse)
+		})
+	}
+
+}
+
 func TestFilterPage(t *testing.T) {
 	type Test struct {
 		Name                   string
@@ -131,9 +123,9 @@ func TestFilterPage(t *testing.T) {
 			Name:                   "positive test",
 			ExpectedError:          "",
 			DOMLengthMustBeGreater: 0,
-			DOMLengthMustBeSmaller: 2000,
-			url:                    "https://www.synonyms.com/synonym/happy",
-			Synonyms:               []string{"felicitous", "glad", "cheerful", "elated"},
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia",
+			Synonyms:               []string{"Greene County, Virginia"},
 		},
 	}
 
@@ -141,14 +133,17 @@ func TestFilterPage(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			// create element
 			// Request the HTML page.
-			res, _ := http.Get(test.url)
+			client := &http.Client{}
+			req, err := http.NewRequest("GET", test.url, nil)
+			// need
+			req.Header.Add("User-Agent", `Dgoldstein1/crawler`)
+			res, _ := client.Do(req)
 			defer res.Body.Close()
 			// Load the HTML document
 			doc, _ := goquery.NewDocumentFromReader(res.Body)
 			el := colly.HTMLElement{
 				DOM: doc.Selection,
 			}
-
 			// run tests
 			e, err := FilterPage(&el)
 			if test.ExpectedError == "" {
@@ -167,7 +162,7 @@ func TestFilterPage(t *testing.T) {
 }
 
 func TestAddEdgesIfDoNotExist(t *testing.T) {
-	node := "/synonym/test"
+	node := "/synonym/ar/test"
 	neighbors := []string{}
 	added, _ := AddEdgesIfDoNotExist(node, neighbors)
 	assert.Equal(t, added, []string(nil))
