@@ -14,6 +14,8 @@ var dbEndpoint = "http://localhost:17474"
 var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
+	os.Setenv("COUNTIES_LIST", "counties.txt")
+	defer os.Unsetenv("COUNTIES_LIST")
 	testTable := []struct {
 		name              string
 		input             string
@@ -33,6 +35,13 @@ func TestIsValidCrawlLink(t *testing.T) {
 			assert.Equal(t, test.expectedToBeValid, IsValidCrawlLink(test.input))
 		})
 	}
+	// assert panic
+	assert.Panics(t, func() {
+		counties = []string{}
+		os.Setenv("COUNTIES_LIST", "sdfsdflkj.txt")
+		IsValidCrawlLink("/wiki/Albemarle_County,_Virginia")
+	}, "The code did not panic")
+
 }
 
 func TestGetRandomNode(t *testing.T) {

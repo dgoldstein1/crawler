@@ -1,11 +1,13 @@
 package counties
 
 import (
+	"bufio"
 	"github.com/dgoldstein1/crawler/db"
 	"github.com/dgoldstein1/crawler/util"
 	"github.com/dgoldstein1/crawler/wikipedia"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	"os"
 	"strings"
 	"time"
 )
@@ -15,21 +17,37 @@ var logErr = log.Errorf
 var prefix = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
 var timeout = time.Duration(5 * time.Second)
+var counties = []string{}
 
 func IsValidCrawlLink(link string) bool {
 	// countains the word 'county' in format 'NAME_county,_STATE'
 	if !strings.Contains(strings.ToLower(link), "_county,_") {
 		return false
 	}
-	// assert that only contains one ',_' (more than one denotes town)
-	if strings.Count(link, ",_") > 1 {
-		return false
+	// ensure that is on master list
+	return stringInFile(strings.TrimPrefix(link, prefix))
+}
+
+func stringInFile(link string) bool {
+	// read in counties list if does not exist
+	if len(counties) == 0 {
+		file, err := os.Open(os.Getenv("COUNTIES_LIST"))
+		defer file.Close()
+		if err != nil {
+			panic(err)
+		}
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			counties = append(counties, strings.ToLower(scanner.Text()))
+		}
 	}
-	// national registry
-	if strings.Contains(strings.ToLower(link), "national_register_of_historic_places") {
-		return false
+	// now check if string exists in file
+	for _, c := range counties {
+		if strings.ToLower(link) == c {
+			return true
+		}
 	}
-	return wikipedia.IsValidCrawlLink(link)
+	return false
 }
 
 func GetRandomNode() (string, error) {
