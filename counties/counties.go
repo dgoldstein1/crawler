@@ -27,6 +27,7 @@ func GetRandomNode() (string, error) {
 		"COUNTIES_LIST",
 		baseEndpoint,
 		prefix,
+		false,
 	)
 }
 

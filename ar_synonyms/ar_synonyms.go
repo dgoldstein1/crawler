@@ -36,6 +36,7 @@ func GetRandomNode() (string, error) {
 		"ARABIC_WORD_LIST_PATH",
 		baseEndpoint,
 		prefix,
+		false,
 	)
 }
 

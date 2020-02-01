@@ -11,7 +11,12 @@ import (
 
 var logErr = log.Errorf
 
-func ReadRandomLineFromFile(envName string, baseEndpoint string, prefix string) (string, error) {
+func ReadRandomLineFromFile(
+	envName string,
+	baseEndpoint string,
+	prefix string,
+	toLower bool,
+) (string, error) {
 	path := os.Getenv(envName)
 	if path == "" {
 		return "", fmt.Errorf("%s was not set", envName)
@@ -25,7 +30,11 @@ func ReadRandomLineFromFile(envName string, baseEndpoint string, prefix string) 
 	scanner := bufio.NewScanner(file)
 	words := []string{}
 	for scanner.Scan() {
-		words = append(words, strings.ToLower(scanner.Text()))
+		w := scanner.Text()
+		if toLower {
+			w = strings.ToLower(w)
+		}
+		words = append(words, w)
 	}
 	err = scanner.Err()
 	// get random index of list

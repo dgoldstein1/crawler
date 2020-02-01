@@ -32,6 +32,7 @@ func GetRandomNode() (string, error) {
 		"ENGLISH_WORD_LIST_PATH",
 		baseEndpoint,
 		prefix,
+		true,
 	)
 }
 

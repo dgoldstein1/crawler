@@ -20,6 +20,7 @@ func TestReadRandomLineFromFile(t *testing.T) {
 	type Test struct {
 		Name          string
 		ExpectedError string
+		toLower       bool
 		Before        func()
 		After         func()
 		EnvName       string
@@ -34,6 +35,7 @@ func TestReadRandomLineFromFile(t *testing.T) {
 			Name:          "ARABIC_WORD_LIST_PATH not set",
 			ExpectedError: "ARABIC_WORD_LIST_PATH was not set",
 			EnvName:       "ARABIC_WORD_LIST_PATH",
+			toLower:       true,
 			Before: func() {
 				os.Setenv("ARABIC_WORD_LIST_PATH", "")
 			},
@@ -45,6 +47,7 @@ func TestReadRandomLineFromFile(t *testing.T) {
 			Name:          "gets random word succesfully",
 			EnvName:       "ARABIC_WORD_LIST_PATH",
 			ExpectedError: "",
+			toLower:       true,
 			Before: func() {
 				os.Setenv("ARABIC_WORD_LIST_PATH", defaultTextDir)
 			},
@@ -54,6 +57,7 @@ func TestReadRandomLineFromFile(t *testing.T) {
 			Name:          "no such path",
 			ExpectedError: "open this/does/not/exist: no such file or directory",
 			EnvName:       "ARABIC_WORD_LIST_PATH",
+			toLower:       true,
 			Before: func() {
 				os.Setenv("ARABIC_WORD_LIST_PATH", "this/does/not/exist")
 			},
@@ -66,7 +70,7 @@ func TestReadRandomLineFromFile(t *testing.T) {
 	for _, test := range testTable {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Before()
-			w, err := ReadRandomLineFromFile(test.EnvName, baseEndpoint, prefix)
+			w, err := ReadRandomLineFromFile(test.EnvName, baseEndpoint, prefix, test.toLower)
 			// positive tests
 			if test.ExpectedError == "" {
 				assert.NotEqual(t, "", w)
