@@ -121,8 +121,8 @@ func TestFilterPage(t *testing.T) {
 			ExpectedError:          "",
 			DOMLengthMustBeGreater: 0,
 			DOMLengthMustBeSmaller: 40000,
-			url:                    "https://synonyms.reverso.net/synonym/ar/%D8%AF%D9%88%D8%B1",
-			Synonyms:               []string{"مرحلة"}, // []string{"مرحلة", "فترة", "وقت", "عصر"},
+			url:                    "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia",
+			Synonyms:               []string{"Greene County, Virginia"},
 		},
 	}
 
@@ -152,6 +152,7 @@ func TestFilterPage(t *testing.T) {
 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
 			// make sure there are href links
 			for _, w := range test.Synonyms {
+				fmt.Println(e.DOM.Text())
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
 			}
 		})
