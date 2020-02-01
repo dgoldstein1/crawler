@@ -1,14 +1,11 @@
 package ar_synonyms
 
 import (
-	"bufio"
-	"errors"
 	"github.com/dgoldstein1/crawler/db"
+	"github.com/dgoldstein1/crawler/util"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
-	"math/rand"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -35,27 +32,12 @@ func IsValidCrawlLink(link string) bool {
 	return valid
 }
 
-// gets random article from a local file
-// returns article in the form "/synonym/ar/XXXXX"
 func GetRandomNode() (string, error) {
-	path := os.Getenv("ARABIC_WORD_LIST_PATH")
-	if path == "" {
-		return "", errors.New("ARABIC_WORD_LIST_PATH was not set")
-	}
-	// read in file to list of strings
-	file, err := os.Open(path)
-	defer file.Close()
-	if err != nil {
-		return "", err
-	}
-	scanner := bufio.NewScanner(file)
-	words := []string{}
-	for scanner.Scan() {
-		words = append(words, strings.ToLower(scanner.Text()))
-	}
-	err = scanner.Err()
-	// get random index of list
-	return baseEndpoint + prefix + words[rand.Intn(len(words))], err
+	return util.ReadRandomLineFromFile(
+		"ARABIC_WORD_LIST_PATH",
+		baseEndpoint,
+		prefix,
+	)
 }
 
 // decodes and standaridizes URL

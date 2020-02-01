@@ -18,13 +18,10 @@ var baseEndpoint = "https://synonyms.reverso.net"
 var timeout = time.Duration(5 * time.Second)
 var c = colly.NewCollector()
 
-// determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
 	return wikipedia.IsValidCrawlLink(link)
 }
 
-// gets random article from a local file
-// returns article in the form "/synonym/ar/XXXXX"
 func GetRandomNode() (string, error) {
 	return util.ReadRandomLineFromFile(
 		"COUNTIES_LIST",
