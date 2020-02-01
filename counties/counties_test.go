@@ -14,22 +14,18 @@ var dbEndpoint = "http://localhost:17474"
 var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
-	t.Run("does not crawl on links with ':'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/wiki/Category:Spinash"), false)
-		assert.Equal(t, IsValidCrawlLink("/wiki/Test:"), false)
-	})
-	t.Run("does not crawl on links not starting with '/wiki/'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("https://wikipedia.org"), false)
-		assert.Equal(t, IsValidCrawlLink("/wiki"), false)
-		assert.Equal(t, IsValidCrawlLink("wikipedia/wiki/"), false)
-		assert.Equal(t, IsValidCrawlLink("/wiki/binary"), true)
-	})
-	t.Run("doesn't accept 'main_page'", func(t *testing.T) {
-		assert.Equal(t, IsValidCrawlLink("/wiki/Main_Page"), false)
-		assert.Equal(t, IsValidCrawlLink("/wiki/main_Page"), false)
-		assert.Equal(t, IsValidCrawlLink("/wiki/main_page"), false)
-
-	})
+	testTable := []struct {
+		name              string
+		input             string
+		expectedToBeValid bool
+	}{
+		{"positive test", "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia", true},
+	}
+	for _, test := range testTable {
+		t.Run(test.name, func(t *testing.T) {
+			assert.Equal(t, test.expectedToBeValid, IsValidCrawlLink(test.input))
+		})
+	}
 }
 
 func TestGetRandomNode(t *testing.T) {
@@ -152,7 +148,6 @@ func TestFilterPage(t *testing.T) {
 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
 			// make sure there are href links
 			for _, w := range test.Synonyms {
-				fmt.Println(e.DOM.Text())
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
 			}
 		})

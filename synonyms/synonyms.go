@@ -15,7 +15,6 @@ var logErr = log.Errorf
 var prefix = "/synonym/"
 var baseEndpoint = "http://www.synonyms.com"
 var timeout = time.Duration(5 * time.Second)
-var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {

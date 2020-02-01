@@ -11,10 +11,9 @@ import (
 
 // globals
 var logErr = log.Errorf
-var prefix = "/synonym/ar/"
-var baseEndpoint = "https://synonyms.reverso.net"
+var prefix = "/wiki/"
+var baseEndpoint = "https://en.wikipedia.org"
 var timeout = time.Duration(5 * time.Second)
-var c = colly.NewCollector()
 
 func IsValidCrawlLink(link string) bool {
 	return wikipedia.IsValidCrawlLink(link)

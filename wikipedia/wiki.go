@@ -19,7 +19,6 @@ var prefix = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
 var metawikiEndpoint = "https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&generator=random&grnnamespace=0&grnlimit=1ts="
 var timeout = time.Duration(5 * time.Second)
-var c = colly.NewCollector()
 
 // determines if is good link to crawl on
 func IsValidCrawlLink(link string) bool {
