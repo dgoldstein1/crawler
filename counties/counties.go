@@ -6,6 +6,7 @@ import (
 	"github.com/dgoldstein1/crawler/wikipedia"
 	"github.com/gocolly/colly"
 	log "github.com/sirupsen/logrus"
+	"strings"
 	"time"
 )
 
@@ -16,7 +17,9 @@ var baseEndpoint = "https://en.wikipedia.org"
 var timeout = time.Duration(5 * time.Second)
 
 func IsValidCrawlLink(link string) bool {
-	return wikipedia.IsValidCrawlLink(link)
+	// countains the word 'county' in format 'NAME_county,_STATE'
+	hasCorrrectCountyFormat := strings.Contains(strings.ToLower(link), "_county,_")
+	return hasCorrrectCountyFormat && wikipedia.IsValidCrawlLink(link)
 }
 
 func GetRandomNode() (string, error) {

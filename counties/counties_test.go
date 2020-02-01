@@ -19,7 +19,12 @@ func TestIsValidCrawlLink(t *testing.T) {
 		input             string
 		expectedToBeValid bool
 	}{
-		{"positive test", "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia", true},
+		{"positive test", "/wiki/Albemarle_County,_Virginia", true},
+		{"positive test (2)", "/wiki/Miami-Dade_County,_Florida", true},
+		{"positive test (2)", "/wiki/Dakota_County,_Minnesota", true},
+		{"incorrect county format (1)", "/wiki/Albemarle_County,XX_Virginia", false},
+		{"incorrect county format (2)", "/wiki/AlbemarleXXounty,_Virginia", false},
+		{"incorrect prefix", "/wiki_test/Albemarle_County,_Virginia", false},
 	}
 	for _, test := range testTable {
 		t.Run(test.name, func(t *testing.T) {
