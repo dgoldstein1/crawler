@@ -24,6 +24,8 @@ func TestIsValidCrawlLink(t *testing.T) {
 		{"positive test (2)", "/wiki/Dakota_County,_Minnesota", true},
 		{"incorrect county format (1)", "/wiki/Albemarle_County,XX_Virginia", false},
 		{"incorrect county format (2)", "/wiki/AlbemarleXXounty,_Virginia", false},
+		{"town in county", "/wiki/Oak_Ridge,_Nelson_County,_Virginia", false},
+		{"national registry of historic places", "/wiki/National_Register_of_Historic_Places_listings_in_Clarke_County,_Virginia ", false},
 		{"incorrect prefix", "/wiki_test/Albemarle_County,_Virginia", false},
 	}
 	for _, test := range testTable {

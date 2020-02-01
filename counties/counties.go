@@ -18,8 +18,18 @@ var timeout = time.Duration(5 * time.Second)
 
 func IsValidCrawlLink(link string) bool {
 	// countains the word 'county' in format 'NAME_county,_STATE'
-	hasCorrrectCountyFormat := strings.Contains(strings.ToLower(link), "_county,_")
-	return hasCorrrectCountyFormat && wikipedia.IsValidCrawlLink(link)
+	if !strings.Contains(strings.ToLower(link), "_county,_") {
+		return false
+	}
+	// assert that only contains one ',_' (more than one denotes town)
+	if strings.Count(link, ",_") > 1 {
+		return false
+	}
+	// national registry
+	if strings.Contains(strings.ToLower(link), "national_register_of_historic_places") {
+		return false
+	}
+	return wikipedia.IsValidCrawlLink(link)
 }
 
 func GetRandomNode() (string, error) {
