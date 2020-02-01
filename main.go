@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/dgoldstein1/crawler/ar_synonyms"
+	"github.com/dgoldstein1/crawler/counties"
 	"github.com/dgoldstein1/crawler/crawler"
 	db "github.com/dgoldstein1/crawler/db"
 	syn "github.com/dgoldstein1/crawler/synonyms"
@@ -113,6 +114,20 @@ func main() {
 					ar_synonyms.AddEdgesIfDoNotExist,
 					ar_synonyms.GetRandomNode,
 					ar_synonyms.FilterPage,
+				)
+				return nil
+			},
+		},
+		{
+			Name:    "us_counties",
+			Aliases: []string{"counties"},
+			Usage:   "crawl on 'Adjacent counties' from wikipedia",
+			Action: func(c *cli.Context) error {
+				runCrawler(
+					counties.IsValidCrawlLink,
+					counties.AddEdgesIfDoNotExist,
+					counties.GetRandomNode,
+					counties.FilterPage,
 				)
 				return nil
 			},

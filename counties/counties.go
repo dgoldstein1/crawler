@@ -1,4 +1,4 @@
-package ar_synonyms
+package counties
 
 import (
 	"github.com/dgoldstein1/crawler/db"
