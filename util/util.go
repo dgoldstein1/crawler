@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 var logErr = log.Errorf
@@ -38,5 +39,6 @@ func ReadRandomLineFromFile(
 	}
 	err = scanner.Err()
 	// get random index of list
+	rand.Seed(time.Now().UnixNano())
 	return baseEndpoint + prefix + words[rand.Intn(len(words))], err
 }

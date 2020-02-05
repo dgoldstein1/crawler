@@ -102,6 +102,9 @@ func TestGetRandomNode(t *testing.T) {
 				w1, err := GetRandomNode()
 				assert.Nil(t, err)
 				assert.NotEqual(t, w, w1)
+				w2, err := GetRandomNode()
+				assert.Nil(t, err)
+				assert.NotEqual(t, w1, w2)
 			}
 
 			test.After()

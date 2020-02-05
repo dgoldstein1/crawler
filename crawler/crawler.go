@@ -28,12 +28,14 @@ func Run(
 	}
 	// get starting link if there isn't one already
 	if endpoint == "" {
+		logMsg("Finding new node..")
 		e, err := getNewNode()
 		if err != nil {
 			logFatal("Could not find new starting node: %v", err)
 		} else {
 			endpoint = e
 		}
+		logMsg("New node found: %s", e)
 	}
 	// parse out env
 	maxNodes, _ := strconv.Atoi(os.Getenv("MAX_APPROX_NODES"))
