@@ -183,6 +183,7 @@ func TestFilterPage(t *testing.T) {
 			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
 			// make sure there are href links
+			fmt.Println(e.DOM.Text())
 			for _, w := range test.Synonyms {
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
 			}
