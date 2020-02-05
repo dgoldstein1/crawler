@@ -74,7 +74,7 @@ func main() {
 	app.Name = "crawler"
 	app.Usage = " acustomizable web crawler script for different websites"
 	app.Description = "web crawl different URLs and add similar urls to a graph database"
-	app.Version = "1.2.0"
+	app.Version = "1.3.1"
 	app.Commands = []cli.Command{
 		{
 			Name:    "wikipedia",

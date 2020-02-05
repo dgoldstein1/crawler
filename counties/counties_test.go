@@ -14,6 +14,8 @@ var dbEndpoint = "http://localhost:17474"
 var twoWayEndpoint = "http://localhost:17475"
 
 func TestIsValidCrawlLink(t *testing.T) {
+	os.Setenv("COUNTIES_LIST", "counties.txt")
+	defer os.Unsetenv("COUNTIES_LIST")
 	testTable := []struct {
 		name              string
 		input             string
@@ -33,6 +35,13 @@ func TestIsValidCrawlLink(t *testing.T) {
 			assert.Equal(t, test.expectedToBeValid, IsValidCrawlLink(test.input))
 		})
 	}
+	// assert panic
+	assert.Panics(t, func() {
+		counties = map[string]bool{}
+		os.Setenv("COUNTIES_LIST", "sdfsdflkj.txt")
+		IsValidCrawlLink("/wiki/Albemarle_County,_Virginia")
+	}, "The code did not panic")
+
 }
 
 func TestGetRandomNode(t *testing.T) {
@@ -52,7 +61,6 @@ func TestGetRandomNode(t *testing.T) {
 		After         func()
 	}
 
-	defaultTextDir := "counties.txt"
 	testTable := []Test{
 		Test{
 			Name:          "COUNTIES_LIST not set",
@@ -61,7 +69,17 @@ func TestGetRandomNode(t *testing.T) {
 				os.Setenv("COUNTIES_LIST", "")
 			},
 			After: func() {
-				os.Setenv("COUNTIES_LIST", defaultTextDir)
+				os.Unsetenv("COUNTIES_LIST")
+			},
+		},
+		Test{
+			Name:          "does not output same node twice",
+			ExpectedError: "",
+			Before: func() {
+				os.Setenv("COUNTIES_LIST", "counties.txt")
+			},
+			After: func() {
+				os.Unsetenv("COUNTIES_LIST")
 			},
 		},
 	}
@@ -79,6 +97,16 @@ func TestGetRandomNode(t *testing.T) {
 				assert.NotEqual(t, nil, err)
 				assert.Equal(t, test.ExpectedError, err.Error())
 			}
+
+			if test.Name == "does not output same node twice" {
+				w1, err := GetRandomNode()
+				assert.Nil(t, err)
+				assert.NotEqual(t, w, w1)
+				w2, err := GetRandomNode()
+				assert.Nil(t, err)
+				assert.NotEqual(t, w1, w2)
+			}
+
 			test.After()
 		})
 	}
@@ -116,21 +144,59 @@ func TestFilterPage(t *testing.T) {
 		DOMLengthMustBeSmaller int
 		Synonyms               []string
 		url                    string
+		doesNotCountain        []string
 	}
 
 	testTable := []Test{
 		Test{
-			Name:                   "positive test",
+			Name:                   "positive test (1)",
 			ExpectedError:          "",
 			DOMLengthMustBeGreater: 0,
 			DOMLengthMustBeSmaller: 40000,
 			url:                    "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia",
 			Synonyms:               []string{"Greene County, Virginia"},
+			doesNotCountain:        []string{},
+		},
+		Test{
+			Name:                   "positive test (2)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Miami-Dade_County,_Florida",
+			Synonyms:               []string{"Broward", "CountyMonroe", "CountyCollier", "County"},
+			doesNotCountain:        []string{},
+		},
+		Test{
+			Name:                   "does not contain extra words (random links)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Wayne_County,_West_Virginia",
+			Synonyms:               []string{},
+			doesNotCountain:        []string{"Wayne County is one of three counties"},
+		},
+		Test{
+			Name:                   "positive test (3)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Pembina_County,_North_Dakota",
+			Synonyms:               []string{"Stanley", "Rhineland", "Montcalm", "Kittson", "Marshall", "Walsh", "Cavalier"},
+			doesNotCountain:        []string{},
+		},
+		Test{
+			Name:                   "positive test (4)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Ravalli_County,_Montana",
+			Synonyms:               []string{"Missoula"},
+			doesNotCountain:        []string{},
 		},
 	}
 
 	for _, test := range testTable {
-		t.Run(test.Name, func(t *testing.T) {
+		t.Run(test.url, func(t *testing.T) {
 			// create element
 			// Request the HTML page.
 			client := &http.Client{}
@@ -156,6 +222,9 @@ func TestFilterPage(t *testing.T) {
 			// make sure there are href links
 			for _, w := range test.Synonyms {
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
+			}
+			for _, w := range test.doesNotCountain {
+				assert.NotContains(t, e.DOM.Text(), w)
 			}
 		})
 	}
