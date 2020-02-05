@@ -125,6 +125,7 @@ func TestFilterPage(t *testing.T) {
 		DOMLengthMustBeSmaller int
 		Synonyms               []string
 		url                    string
+		doesNotCountain        []string
 	}
 
 	testTable := []Test{
@@ -135,6 +136,7 @@ func TestFilterPage(t *testing.T) {
 			DOMLengthMustBeSmaller: 40000,
 			url:                    "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia",
 			Synonyms:               []string{"Greene County, Virginia"},
+			doesNotCountain:        []string{},
 		},
 		Test{
 			Name:                   "positive test (2)",
@@ -143,6 +145,16 @@ func TestFilterPage(t *testing.T) {
 			DOMLengthMustBeSmaller: 40000,
 			url:                    "https://en.wikipedia.org/wiki/Miami-Dade_County,_Florida",
 			Synonyms:               []string{"Broward", "CountyMonroe", "CountyCollier", "County"},
+			doesNotCountain:        []string{},
+		},
+		Test{
+			Name:                   "does not contain extra words (random links)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Wayne_County,_West_Virginia",
+			Synonyms:               []string{},
+			doesNotCountain:        []string{"Wayne County is one of three counties"},
 		},
 	}
 
@@ -173,6 +185,9 @@ func TestFilterPage(t *testing.T) {
 			// make sure there are href links
 			for _, w := range test.Synonyms {
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
+			}
+			for _, w := range test.doesNotCountain {
+				assert.NotContains(t, e.DOM.Text(), w)
 			}
 		})
 	}
