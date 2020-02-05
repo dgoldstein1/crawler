@@ -175,6 +175,24 @@ func TestFilterPage(t *testing.T) {
 			Synonyms:               []string{},
 			doesNotCountain:        []string{"Wayne County is one of three counties"},
 		},
+		Test{
+			Name:                   "positive test (3)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Pembina_County,_North_Dakota",
+			Synonyms:               []string{"Union County", "Wallowa County", "Adams County", "Washington County", "Malheur County", "Grant County"},
+			doesNotCountain:        []string{},
+		},
+		Test{
+			Name:                   "positive test (4)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Ravalli_County,_Montana",
+			Synonyms:               []string{"Missoula"},
+			doesNotCountain:        []string{},
+		},
 	}
 
 	for _, test := range testTable {
@@ -202,6 +220,7 @@ func TestFilterPage(t *testing.T) {
 			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
 			// make sure there are href links
+			fmt.Printf("--- %s --- \n", test.url)
 			fmt.Println(e.DOM.Text())
 			for _, w := range test.Synonyms {
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
