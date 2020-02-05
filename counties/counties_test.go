@@ -61,7 +61,6 @@ func TestGetRandomNode(t *testing.T) {
 		After         func()
 	}
 
-	defaultTextDir := "counties.txt"
 	testTable := []Test{
 		Test{
 			Name:          "COUNTIES_LIST not set",
@@ -70,7 +69,17 @@ func TestGetRandomNode(t *testing.T) {
 				os.Setenv("COUNTIES_LIST", "")
 			},
 			After: func() {
-				os.Setenv("COUNTIES_LIST", defaultTextDir)
+				os.Unsetenv("COUNTIES_LIST")
+			},
+		},
+		Test{
+			Name:          "does not output same node twice",
+			ExpectedError: "",
+			Before: func() {
+				os.Setenv("COUNTIES_LIST", "counties.txt")
+			},
+			After: func() {
+				os.Unsetenv("COUNTIES_LIST")
 			},
 		},
 	}
@@ -88,6 +97,13 @@ func TestGetRandomNode(t *testing.T) {
 				assert.NotEqual(t, nil, err)
 				assert.Equal(t, test.ExpectedError, err.Error())
 			}
+
+			if test.Name == "does not output same node twice" {
+				w1, err := GetRandomNode()
+				assert.Nil(t, err)
+				assert.NotEqual(t, w, w1)
+			}
+
 			test.After()
 		})
 	}
