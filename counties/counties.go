@@ -65,8 +65,8 @@ func FilterPage(e *colly.HTMLElement) (*colly.HTMLElement, error) {
 	e.DOM = e.DOM.
 		Find(`[id^='Adjacent_counties']`).
 		Parent().
-		NextUntil("h3")
-		// ChildrenFiltered("li")
+		NextUntil("h3").
+		Not("p")
 
 	return e, nil
 }

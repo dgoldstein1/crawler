@@ -181,7 +181,7 @@ func TestFilterPage(t *testing.T) {
 			DOMLengthMustBeGreater: 0,
 			DOMLengthMustBeSmaller: 40000,
 			url:                    "https://en.wikipedia.org/wiki/Pembina_County,_North_Dakota",
-			Synonyms:               []string{"Union", "Wallowa", "Adams", "Washington", "Malheur", "Grant"},
+			Synonyms:               []string{"Stanley", "Rhineland", "Montcalm", "Kittson", "Marshall", "Walsh", "Cavalier"},
 			doesNotCountain:        []string{},
 		},
 		Test{
@@ -220,9 +220,6 @@ func TestFilterPage(t *testing.T) {
 			assert.Less(t, test.DOMLengthMustBeGreater, len(e.DOM.Text()))
 			assert.Greater(t, test.DOMLengthMustBeSmaller, len(e.DOM.Text()))
 			// make sure there are href links
-			fmt.Printf("--- %s --- \n", test.url)
-			fmt.Println(e.DOM.Text())
-			fmt.Printf("--- --- ")
 			for _, w := range test.Synonyms {
 				assert.Contains(t, e.DOM.Find("a[href]").Text(), w)
 			}
