@@ -37,7 +37,7 @@ func TestIsValidCrawlLink(t *testing.T) {
 	}
 	// assert panic
 	assert.Panics(t, func() {
-		counties = []string{}
+		counties = map[string]bool{}
 		os.Setenv("COUNTIES_LIST", "sdfsdflkj.txt")
 		IsValidCrawlLink("/wiki/Albemarle_County,_Virginia")
 	}, "The code did not panic")

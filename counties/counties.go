@@ -17,7 +17,7 @@ var logErr = log.Errorf
 var prefix = "/wiki/"
 var baseEndpoint = "https://en.wikipedia.org"
 var timeout = time.Duration(5 * time.Second)
-var counties = []string{}
+var counties = make(map[string]bool)
 
 func IsValidCrawlLink(link string) bool {
 	// countains the word 'county' in format 'NAME_county,_STATE'
@@ -38,16 +38,11 @@ func stringInFile(link string) bool {
 		}
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			counties = append(counties, strings.ToLower(scanner.Text()))
+			counties[strings.ToLower(scanner.Text())] = true
 		}
 	}
 	// now check if string exists in file
-	for _, c := range counties {
-		if strings.ToLower(link) == c {
-			return true
-		}
-	}
-	return false
+	return counties[strings.ToLower(link)]
 }
 
 func GetRandomNode() (string, error) {
