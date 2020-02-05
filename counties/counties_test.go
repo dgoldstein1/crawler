@@ -129,12 +129,20 @@ func TestFilterPage(t *testing.T) {
 
 	testTable := []Test{
 		Test{
-			Name:                   "positive test",
+			Name:                   "positive test (1)",
 			ExpectedError:          "",
 			DOMLengthMustBeGreater: 0,
 			DOMLengthMustBeSmaller: 40000,
 			url:                    "https://en.wikipedia.org/wiki/Albemarle_County,_Virginia",
 			Synonyms:               []string{"Greene County, Virginia"},
+		},
+		Test{
+			Name:                   "positive test (2)",
+			ExpectedError:          "",
+			DOMLengthMustBeGreater: 0,
+			DOMLengthMustBeSmaller: 40000,
+			url:                    "https://en.wikipedia.org/wiki/Miami-Dade_County,_Florida",
+			Synonyms:               []string{"Broward", "CountyMonroe", "CountyCollier", "County"},
 		},
 	}
 
