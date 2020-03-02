@@ -33,14 +33,14 @@ func TestAddNeighbors(t *testing.T) {
 				// Exact URL match
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []string{"2", "3", "4"}})
 					},
 				)
 			},
 			CurrNode:    1,
 			NeighborIds: []int{2, 3, 4},
 			ExpectedResponse: GraphResponseSuccess{
-				NeighborsAdded: []int{2, 3, 4},
+				NeighborsAdded: []string{"2", "3", "4"},
 			},
 			ExpectedError: nil,
 		},
@@ -201,7 +201,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out DB call
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []string{"2", "3", "4"}})
 					},
 				)
 				// mock out metadata call
@@ -231,7 +231,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out DB call
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []string{"2", "3", "4"}})
 					},
 				)
 				// mock out metadata call
@@ -261,7 +261,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out DB call
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{4}})
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []string{"4"}})
 					},
 				)
 				// mock out metadata call
@@ -291,7 +291,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out DB call
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []string{"2", "3", "4"}})
 					},
 				)
 				// mock out metadata call
@@ -342,7 +342,7 @@ func TestAddEdgesIfDoNotExist(t *testing.T) {
 				// mock out DB call
 				httpmock.RegisterResponder("POST", dbEndpoint+"/edges?node=1",
 					func(req *http.Request) (*http.Response, error) {
-						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []int{2, 3, 4}})
+						return httpmock.NewJsonResponse(200, map[string]interface{}{"neighborsAdded": []string{"2", "3", "4"}})
 					},
 				)
 				// mock out metadata call
