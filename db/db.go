@@ -167,7 +167,8 @@ func AddEdgesIfDoNotExist(
 	// map id => string
 	for _, entry := range twoWayResp.Entries {
 		for _, nAdded := range graphResp.NeighborsAdded {
-			if entry.Value == nAdded {
+			nAddedInt, _ := strconv.Atoi(nAdded)
+			if entry.Value == nAddedInt {
 				// add back in prefix
 				neighborsAdded = append(neighborsAdded, baseEndpoint+nodes[entry.Key])
 			}

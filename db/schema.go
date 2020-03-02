@@ -6,7 +6,7 @@ type GraphResponseError struct {
 }
 
 type GraphResponseSuccess struct {
-	NeighborsAdded []int `json:"neighborsAdded"`
+	NeighborsAdded []string `json:"neighborsAdded"`
 }
 
 type TwoWayEntry struct {
