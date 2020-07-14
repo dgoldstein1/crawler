@@ -29,8 +29,8 @@ or with dependencies running locally
 
 ```sh
 # run crawl on wikipedia
-export GRAPH_DB_ENDPOINT="https://graphapi-twowaykv-dev.herokuapp.com/services/biggraph/" # endpoint of graph database
-export TWO_WAY_KV_ENDPOINT="https://graphapi-twowaykv-dev.herokuapp.com/services/twowaykv/" # endpoint of k:v <-> v:k lookup metadata db
+export GRAPH_DB_ENDPOINT="https://graphapi-twowaykv-dev.herokuapp.com/services/biggraph" # endpoint of graph database
+export TWO_WAY_KV_ENDPOINT="https://graphapi-twowaykv-dev.herokuapp.com/services/twowaykv" # endpoint of k:v <-> v:k lookup metadata db
 export STARTING_ENDPOINT="https://en.wikipedia.org/wiki/String_cheese" # if empty, finds random article
 export PARALLELISM=20 # number of parallel threads to run
 export MS_DELAY=5 # ms delay between each request
