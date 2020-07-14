@@ -1,10 +1,15 @@
-FROM golang:1.9
+FROM golang:1.14
 
 # setup go
 ENV GOBIN $GOPATH/bin
 ENV PATH $GOBIN:/usr/local/go/bin:$PATH
 
-COPY build $GOBIN
+
+COPY . /temp
+RUN (cd /temp && go build -o build/crawler && cp build/crawler $GOBIN/crawler)
+RUN rm -rf /temp
+
+
 RUN crawler --version
 
 # copy in assets
