@@ -64,7 +64,7 @@ func TestAddNeighbors(t *testing.T) {
 			CurrNode:         1,
 			NeighborIds:      []int{2, 3, 4},
 			ExpectedResponse: GraphResponseSuccess{},
-			ExpectedError:    errors.New("Post http://localhost:17474/edges?node=1: no responder found"),
+			ExpectedError:    errors.New("Post \"http://localhost:17474/edges?node=1\": no responder found"),
 		},
 	}
 
@@ -140,7 +140,7 @@ func TestGetArticleIds(t *testing.T) {
 			Name:             "returns error on bad endpoint",
 			Articles:         []string{"/wiki/test", "/wiki/test1", "/wiki/test2"},
 			ExpectedResponse: TwoWayResponse{},
-			ExpectedError:    errors.New("Post http://localhost:17475/entries?muteAlreadyExistsError=true: no responder found"),
+			ExpectedError:    errors.New("Post \"http://localhost:17475/entries?muteAlreadyExistsError=true\": no responder found"),
 			Setup:            func() {},
 		},
 	}
@@ -165,7 +165,7 @@ func TestConnectToDB(t *testing.T) {
 	os.Setenv("GRAPH_DB_ENDPOINT", dbEndpoint)
 	t.Run("fails when db not found", func(t *testing.T) {
 		err := ConnectToDB()
-		assert.EqualError(t, err, "Get http://localhost:17474: dial tcp 127.0.0.1:17474: connect: connection refused")
+		assert.EqualError(t, err, "Get \"http://localhost:17474\": dial tcp [::1]:17474: connect: connection refused")
 	})
 	t.Run("succeed when server exists", func(t *testing.T) {
 		// mock out http endpoint

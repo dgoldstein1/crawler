@@ -25,7 +25,6 @@ func parseEnv() {
 		"GRAPH_DB_ENDPOINT",
 		"MAX_APPROX_NODES",
 		"TWO_WAY_KV_ENDPOINT",
-		"METRICS_PORT",
 	}
 	for _, v := range requiredEnvs {
 		if os.Getenv(v) == "" {
@@ -74,7 +73,7 @@ func main() {
 	app.Name = "crawler"
 	app.Usage = " acustomizable web crawler script for different websites"
 	app.Description = "web crawl different URLs and add similar urls to a graph database"
-	app.Version = "1.3.1"
+	app.Version = "1.4.1"
 	app.Commands = []cli.Command{
 		{
 			Name:    "wikipedia",
