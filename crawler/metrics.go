@@ -42,6 +42,9 @@ func ServeMetrics() {
 	prometheus.MustRegister(nodesVisitedCounter)
 	prometheus.MustRegister(nodesAddedCounter)
 	prometheus.MustRegister(maxDepthCounter)
+	if os.Getenv("METRICS_PORT") == "" {
+		os.Setenv("METRICS_PORT", os.Getenv("PORT"))
+	}
 	// serve http
 	go func() {
 		logErr("%v", http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("METRICS_PORT")), nil))
