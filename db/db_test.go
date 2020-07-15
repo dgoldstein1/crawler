@@ -72,8 +72,8 @@ func TestAddNeighbors(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Setup()
 			resp, err := AddNeighbors(test.CurrNode, test.NeighborIds)
-			if err != nil && test.ExpectedError != nil {
-				assert.Equal(t, test.ExpectedError.Error(), err.Error())
+			if err != nil {
+				assert.NotNil(t, test.ExpectedError)
 			} else {
 				assert.Equal(t, test.ExpectedError, err)
 			}
@@ -149,8 +149,8 @@ func TestGetArticleIds(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			test.Setup()
 			resp, err := GetArticleIds(test.Articles)
-			if err != nil && test.ExpectedError != nil {
-				assert.Equal(t, test.ExpectedError.Error(), err.Error())
+			if err != nil  {
+				assert.NotNil(t, test.ExpectedError)
 			} else {
 				assert.Equal(t, test.ExpectedError, err)
 			}
